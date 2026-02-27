@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 
 const ROOT = path.resolve(process.env.AIIA_ROOT || path.join(__dirname, '../..'));
 const LOG_FILE = path.join(ROOT, 'logs', 'combined.log');
-const SKILLS_DIR = path.resolve(process.env.AIIA_SKILLS_DIR || path.join(ROOT, '..', 'skills'));
+const SKILLS_DIR = path.resolve(process.env.AIIA_SKILLS_DIR || path.join(ROOT, 'skills'));
 const BOT_ACTIVITY_WINDOW_HOURS = 24;
 const CODE_CHANGES_CACHE_MS = Number.parseInt(process.env.AIIA_CODE_CHANGES_CACHE_MS, 10) > 0
   ? Number.parseInt(process.env.AIIA_CODE_CHANGES_CACHE_MS, 10)
