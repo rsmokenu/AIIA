@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "network": "node src/server.js & sleep 3 && node mission_agent.cjs DataCollector web_request & node mission_agent.cjs StyleArchitect file_system & node mission_agent.cjs NetworkObserver logging"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

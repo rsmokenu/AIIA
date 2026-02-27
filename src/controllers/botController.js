@@ -202,8 +202,13 @@ exports.updateTaskPriority = async (req, res) => {
     const { taskId, direction } = req.params;
     const db = getDB();
     try {
-        const delta = direction === 'up' ? 10 : -10; // Use larger jump for "Run Now" feel
-        await db.run('UPDATE bot_tasks SET priority = priority + ? WHERE id = ?', [delta, taskId]);
+        const delta = direction === 'up' ? 10 : -10;
+        // If going up, also reset status to 'queued' so it can be picked up immediately if it was stuck
+        if (direction === 'up') {
+            await db.run('UPDATE bot_tasks SET priority = priority + ?, status = "queued" WHERE id = ?', [delta, taskId]);
+        } else {
+            await db.run('UPDATE bot_tasks SET priority = priority + ? WHERE id = ?', [delta, taskId]);
+        }
         res.json({ message: 'Priority updated' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to update priority' });
