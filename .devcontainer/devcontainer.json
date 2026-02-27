@@ -1,7 +1,13 @@
-﻿{
+{
     "name": "AIIA Cloud Environment",
     "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
     "forwardPorts": [3000],
+    "features": {
+        "ghcr.io/devcontainers/features/python:1": {
+            "installTools": true,
+            "version": "latest"
+        }
+    },
     "postCreateCommand": "npm install",
     "customizations": {
         "codespaces": {
