@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 const llmService = require('../services/llmService');
 
 const AIIA_ROOT = path.resolve(process.env.AIIA_ROOT || path.join(__dirname, '../..'));
-const SKILLS_DIR = path.resolve(process.env.AIIA_SKILLS_DIR || path.join(AIIA_ROOT, '..', 'skills'));
+const SKILLS_DIR = path.resolve(process.env.AIIA_SKILLS_DIR || path.join(AIIA_ROOT, 'skills'));
 const AUDIT_SCRIPT_PATH = path.join(SKILLS_DIR, 'gemini-ascension', 'scripts', 'verify_tools.cjs');
 
 exports.completions = async (req, res) => {

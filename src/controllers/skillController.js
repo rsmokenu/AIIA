@@ -4,7 +4,7 @@ const path = require('path');
 const logger = require('../utils/logger');
 
 const AIIA_ROOT = path.resolve(process.env.AIIA_ROOT || path.join(__dirname, '../..'));
-const SKILLS_DIR = path.resolve(process.env.AIIA_SKILLS_DIR || path.join(AIIA_ROOT, '..', 'skills'));
+const SKILLS_DIR = path.resolve(process.env.AIIA_SKILLS_DIR || path.join(AIIA_ROOT, 'skills'));
 
 function isSafeSkillId(skillId) {
   return typeof skillId === 'string'
