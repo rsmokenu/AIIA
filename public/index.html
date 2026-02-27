@@ -67,7 +67,7 @@
         #tactical-view { display: none; flex-direction: column; gap: 1.5rem; height: 700px; margin-bottom: 5rem; }
         .tactical-container { display: grid; grid-template-columns: 1fr 300px; gap: 1rem; flex: 1; min-height: 0; }
         .map-canvas-container { background: transparent; border: 1px solid var(--border); border-radius: 1rem; position: relative; overflow: hidden; }
-        #collaboration-map { width: 100%; height: 100%; }
+        #collaboration-map { width: 100%; height: 100%; display: block; }
         .event-feed { background: var(--card); border: 1px solid var(--border); border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; }
         .feed-header { padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase; }
         .feed-content { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
@@ -164,7 +164,7 @@
                     <div class="map-canvas-container"><canvas id="collaboration-map"></canvas></div>
                     <div class="event-feed">
                         <div class="feed-header">Collaboration Stream</div>
-                        <div class="feed-content" id="collab-feed"><div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div></div>
+                        <div class="feed-content" id="collab-feed"></div>
                     </div>
                 </div>
             </div>
@@ -234,10 +234,10 @@
         };
 
         function switchQuickstart(plat) {
-            document.getElementById('tab-win').classList.toggle('active', plat === 'win');
-            document.getElementById('tab-lin').classList.toggle('active', plat === 'lin');
             const body = document.getElementById('quickstart-body');
             const origin = window.location.origin;
+            document.getElementById('tab-win').classList.toggle('active', plat === 'win');
+            document.getElementById('tab-lin').classList.toggle('active', plat === 'lin');
             body.innerHTML = QUICKSTART_DATA[plat].map((line, idx) => {
                 const finalCmd = line.cmd.startsWith('/') ? origin + line.cmd : line.cmd;
                 return `
@@ -292,7 +292,7 @@
                             </div>
                         </div>
                         <p style="font-family:monospace; font-size:0.7rem;">${bot.id}</p>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
                         <div style="display:flex; gap:0.5rem;">
                             <button class="action-btn" onclick="openTaskModal('${bot.id}','${bot.name}')">Task</button>
                             <button class="action-btn" onclick="openInspectModal('${bot.id}','${bot.name}')">Inspect</button>
@@ -315,7 +315,7 @@
         class TacticalMap {
             constructor(id) {
                 this.c = document.getElementById(id); this.ctx = this.c.getContext('2d');
-                this.bots = new Map(); this.zones = []; this.pulses = []; this.processed = new Set();
+                this.bots = new Map(); this.pulses = []; this.processed = new Set();
                 this.internet = { name: 'INTERNET', x: 0.5, y: 0.5, color: '#f472b6' };
                 this.currentTasks = [];
                 window.addEventListener('resize', () => this.resize());
@@ -351,8 +351,6 @@
                                 <b>${t.bot_name}</b>: ${t.payload.content || 'Task'}
                             </div>
                         `).join('');
-                    } else {
-                        feed.innerHTML = '<div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">No recent events.</div>';
                     }
                 } catch(e){}
             }
@@ -405,7 +403,7 @@
                         this.ctx.fillStyle = '#38bdf822'; this.ctx.beginPath(); this.ctx.arc(f.x, f.y, 12, 0, Math.PI*2); this.ctx.fill();
                         this.ctx.fillStyle = '#38bdf888'; this.ctx.font = '700 8px Inter'; this.ctx.fillText(f.name, f.x+15, f.y+3);
                     });
-                    this.ctx.fillStyle = b.state==='active'?'#22c55e':'#f59e0b'; this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 6, 0, Math.PI*2); this.ctx.fill();
+                    this.ctx.fillStyle = '#22c55e'; this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 6, 0, Math.PI*2); this.ctx.fill();
                     this.ctx.fillStyle = '#fff'; this.ctx.font = '800 10px Inter'; this.ctx.fillText(b.name, b.x+10, b.y+4);
                 });
                 this.pulses.forEach(p => {
@@ -429,7 +427,7 @@
             currentBotId=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
             const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
             const {data} = await res.json();
-            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
+            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td>${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
                 ${t.status === 'queued' ? `<button class="action-btn" style="padding:0.2rem 0.4rem; color:var(--success);" onclick="runNow('${t.id}')"><i class="fas fa-play"></i></button>` : ''}
                 <button class="action-btn" style="padding:0.2rem 0.5rem; color:#ef4444;" onclick="delT('${t.id}')"><i class="fas fa-trash"></i></button>
             </div></td></tr>`).join('');
@@ -446,21 +444,11 @@
             try {
                 const res = await fetch('/api/v1/bots/registry');
                 const {data} = await res.json();
-                // Find any active bot to be the sender
                 const activeBots = data.filter(b => b.state === 'active');
                 if(!activeBots.length) return alert('No active agents online to broadcast');
                 const sender = activeBots[0].id;
-                
-                const bRes = await fetch(`/api/v1/bots/${sender}/broadcast`, { 
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({ content, type: 'direct_prompt' }) 
-                });
-                if (bRes.ok) {
-                    closeBroadcastModal(); 
-                    document.getElementById('broadcast-input').value='';
-                    alert('Broadcast Sent!');
-                }
+                const bRes = await fetch(`/api/v1/bots/${sender}/broadcast`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content }) });
+                if (bRes.ok) { closeBroadcastModal(); document.getElementById('broadcast-input').value=''; alert('Broadcast Sent!'); }
             } catch (err) { alert('Broadcast failed: ' + err.message); }
         }
 
@@ -487,7 +475,7 @@
 
         window.onload = () => {
             loadOmniCore(); loadBots(); refreshLiveStatus(); switchQuickstart('win');
-            window.tM = new TacticalMap('collaboration-map');
+            if(!window.tM) { window.tM = new TacticalMap('collaboration-map'); window.tM.start(); }
             setInterval(() => { loadBots(); refreshLiveStatus(); }, 10000);
         };
     </script>
