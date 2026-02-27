@@ -96,6 +96,7 @@
     <nav class="navbar">
         <a href="#" class="logo"><i class="fas fa-microchip"></i> AIIA</a>
         <div style="display: flex; align-items: center; gap: 2rem;">
+            <div id="brain-status" style="font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:4px; border:1px solid #64748b; color:#64748b;">BRAIN: OFFLINE</div>
             <a href="#" onclick="openBroadcastModal()" style="color: #a855f7; text-decoration: none; font-size: 0.85rem; font-weight: 700;"><i class="fas fa-tower-broadcast"></i> BROADCAST</a>
             <a href="https://github.com/rsmokenu/AIIA" target="_blank" style="color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 600;"><i class="fab fa-github"></i> GITHUB</a>
             <a href="/API_GUIDE.md" style="color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 700;"><i class="fas fa-book"></i> API GUIDE</a>
@@ -241,7 +242,7 @@
             document.getElementById('tab-win').classList.toggle('active', plat === 'win');
             document.getElementById('tab-lin').classList.toggle('active', plat === 'lin');
             body.innerHTML = QUICKSTART_DATA[plat].map((line, idx) => {
-                const finalCmd = line.cmd.startsWith('/') ? origin + line.cmd : line.cmd;
+                const finalCmd = line.cmd.includes('/api/v1') ? origin + line.cmd : line.cmd;
                 return `
                 <div class="q-line">
                     <div class="q-desc">${line.desc}</div>
@@ -284,7 +285,7 @@
             try {
                 const res = await fetch('/api/v1/bots/registry');
                 const { data: bots } = await res.json();
-                document.getElementById('card-view').innerHTML = bots.map(bot => `
+                document.getElementById('card-view').innerHTML = (bots || []).map(bot => `
                     <div class="card">
                         <div style="display:flex; justify-content:space-between;">
                             <h3>${bot.name}</h3>
@@ -301,7 +302,7 @@
                             <button class="action-btn" onclick="updateBotState('${bot.id}','${bot.state==='active'?'stop':'resume'}')">${bot.state==='active'?'Pause':'Resume'}</button>
                         </div>
                     </div>
-                `).join('');
+                `).join('') || '<div class="card"><p style="text-align:center;">No agents registered.</p></div>';
             } catch (e) {}
         }
 
@@ -332,19 +333,17 @@
                     this.currentTasks = d.tasks || [];
                     const centerX = this.c.width/2, centerY = this.c.height/2;
                     
-                    const allBotIds = new Set(d.bots.map(b => b.id));
-                    d.tasks.forEach(t => allBotIds.add(t.bot_id));
+                    const allBotIds = new Set((d.bots || []).map(b => b.id));
+                    (d.tasks || []).forEach(t => allBotIds.add(t.bot_id));
                     
                     const botArray = Array.from(allBotIds);
                     botArray.forEach((id, i) => {
                         const angle = (i / (botArray.length || 1)) * Math.PI * 2;
                         const bX = centerX + Math.cos(angle) * 180, bY = centerY + Math.sin(angle) * 180;
-                        
                         if (!this.bots.has(id)) {
-                            const botData = d.bots.find(b => b.id === id);
-                            const name = botData?.name || d.tasks.find(t => t.bot_id === id)?.bot_name || 'Agent';
-                            const numF = d.folders.length;
-                            const assignedFolders = d.folders.slice((i*2)%(numF||1), (i*2)%(numF||1) + 2).map((fName, j) => {
+                            const botData = (d.bots || []).find(b => b.id === id);
+                            const name = botData?.name || (d.tasks || []).find(t => t.bot_id === id)?.bot_name || 'Agent';
+                            const assignedFolders = (d.folders || []).slice((i*2)%(d.folders.length||1), (i*2)%(d.folders.length||1) + 2).map((fName, j) => {
                                 const fAngle = angle - 0.3 + (j * 0.6);
                                 return { name: fName, x: centerX + Math.cos(fAngle) * 260, y: centerY + Math.sin(fAngle) * 260, color: '#38bdf8' };
                             });
@@ -352,12 +351,12 @@
                         } else {
                             const bot = this.bots.get(id);
                             bot.targetX = bX; bot.targetY = bY;
-                            const botData = d.bots.find(b => b.id === id);
+                            const botData = (d.bots || []).find(b => b.id === id);
                             if (botData) bot.state = botData.state;
                         }
                     });
 
-                    d.tasks.forEach(t => { if (!this.processed.has(t.id)) { this.triggerPulse(t); this.processed.add(t.id); } });
+                    (d.tasks || []).forEach(t => { if (!this.processed.has(t.id)) { this.triggerPulse(t); this.processed.add(t.id); } });
                     const feed = document.getElementById('collab-feed');
                     if(this.currentTasks.length) {
                         feed.innerHTML = this.currentTasks.slice(0, 15).map((t, idx) => `
@@ -398,11 +397,10 @@
                 });
                 this.pulses = this.pulses.filter(p => {
                     p.p += 1.5 * dt;
-                    // Dynamic tracking: If the laser is attached to a bot, update start/end
                     const bot = this.bots.get(p.botId);
                     if (bot) {
                         if (p.c === '#06b6d4') { p.fX = bot.x; p.fY = bot.y; }
-                        else if (p.c === '#f472b6') { p.tX = bot.x; p.tY = bot.y; }
+                        else if (p.c === '#f472b6' && !p.next) { p.tX = bot.x; p.tY = bot.y; }
                     }
                     if (p.p >= 1 && p.next === 'folder') {
                         if (bot && bot.folders.length) {
@@ -444,26 +442,26 @@
             }
         }
 
-        let cB = null;
-        function openTaskModal(id,n){ cB=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
+        let currentBotId = null;
+        function openTaskModal(id,n){ currentBotId=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
         function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); setTimeout(()=>document.getElementById('modal-overlay').style.display='none',300); }
         async function submitTask(){
             const content = document.getElementById('modal-input').value; if(!content) return;
-            await fetch(`/api/v1/bots/${cB}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
+            await fetch(`/api/v1/bots/${currentBotId}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
             closeModal(); document.getElementById('modal-input').value='';
         }
         async function openInspectModal(id,n){
-            cB=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
+            currentBotId=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
             const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
             const {data} = await res.json();
-            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
-                ${t.status === 'queued' ? `<button class="action-btn" style="padding:0.2rem 0.4rem; color:var(--success);" onclick="runNow('${t.id}')"><i class="fas fa-play"></i></button>` : ''}
+            document.getElementById('inspect-task-body').innerHTML = (data || []).map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
+                ${t.status === 'queued' || t.status === 'delivered' ? `<button class="action-btn" style="padding:0.2rem 0.4rem; color:var(--success);" onclick="runNow('${t.id}')"><i class="fas fa-play"></i></button>` : ''}
                 <button class="action-btn" style="padding:0.2rem 0.5rem; color:#ef4444;" onclick="delT('${t.id}')"><i class="fas fa-trash"></i></button>
             </div></td></tr>`).join('');
         }
         function closeInspectModal(){ document.getElementById('inspect-modal').classList.remove('active'); setTimeout(()=>document.getElementById('inspect-modal').style.display='none',300); }
-        async function delT(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}`, {method:'DELETE'}); openInspectModal(cB, ''); }
-        async function runNow(id){ await fetch(`/api/v1/bots/${cB}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(cB, ''); }
+        async function delT(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}`, {method:'DELETE'}); openInspectModal(currentBotId, ''); }
+        async function runNow(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(currentBotId, ''); }
         async function updateBotState(id,a){ await fetch(`/api/v1/bots/${id}/${a}`, {method:'POST'}); loadBots(); }
 
         function openBroadcastModal() { document.getElementById('broadcast-modal').style.display='flex'; document.getElementById('broadcast-modal').classList.add('active'); }
@@ -473,7 +471,7 @@
             try {
                 const res = await fetch('/api/v1/bots/registry');
                 const {data} = await res.json();
-                const activeBots = data.filter(b => b.state === 'active');
+                const activeBots = (data || []).filter(b => b.state === 'active');
                 if(!activeBots.length) return alert('No active agents online to broadcast');
                 const sender = activeBots[0].id;
                 const bRes = await fetch(`/api/v1/bots/${sender}/broadcast`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content }) });
@@ -492,13 +490,19 @@
 
         async function refreshLiveStatus() {
             try {
+                const bRes = await fetch('/api/v1/bots/brain-status'); const bData = await bRes.json();
+                const bEl = document.getElementById('brain-status');
+                bEl.textContent = 'BRAIN: ' + bData.mode;
+                bEl.style.color = bData.configured ? 'var(--success)' : '#ef4444';
+                bEl.style.borderColor = bData.configured ? 'var(--success)' : '#ef4444';
+
                 const res = await fetch('/api/v1/system/status'); const d = await res.json();
                 document.getElementById('live-meta').innerHTML = `<span><b>Status:</b> ${d.status.toUpperCase()}</span> <span><b>Agents:</b> ${d.botCount}</span> <span><b>Uptime:</b> ${d.uptimeSec}s</span> <span style="margin-left:auto; opacity:0.6; font-size:0.75rem;">Synced: ${new Date().toLocaleTimeString()}</span>`;
-                document.getElementById('live-events').innerHTML = d.recentEvents.map(e => {
+                document.getElementById('live-events').innerHTML = (d.recentEvents || []).map(e => {
                     let msg = e; try { const p = JSON.parse(e); const t = new Date(p.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); msg = `<span style="color:var(--text-dim)">[${t}]</span> ${p.message}`; } catch(err) {}
                     return `<div style="margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${msg}</div>`;
                 }).join('');
-                document.getElementById('live-code').innerHTML = d.recentCodeChanges.map(c => `<div style="display:flex; justify-content:space-between;"><span>${c.file}</span><span style="color:var(--text-dim); font-size:0.7rem;">${c.ageSec < 60 ? c.ageSec+'s' : Math.floor(c.ageSec/60)+'m'} ago</span></div>`).join('') || '<div>No recent changes</div>';
+                document.getElementById('live-code').innerHTML = (d.recentCodeChanges || []).map(c => `<div style="display:flex; justify-content:space-between;"><span>${c.file}</span><span style="color:var(--text-dim); font-size:0.7rem;">${c.ageSec < 60 ? c.ageSec+'s' : Math.floor(c.ageSec/60)+'m'} ago</span></div>`).join('') || '<div>No recent changes</div>';
             } catch(e){}
         }
 

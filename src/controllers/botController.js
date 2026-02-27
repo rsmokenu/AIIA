@@ -3,319 +3,158 @@ const { getDB } = require('../config/database');
 const logger = require('../utils/logger');
 const llmService = require('../services/llmService');
 
-function parseCapabilities(value) {
-  const input = Array.isArray(value)
-    ? value
-    : (typeof value === 'string' ? [value] : []);
-
-  const normalized = input
-    .filter((item) => typeof item === 'string')
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map((item) => item.slice(0, 80));
-
-  return Array.from(new Set(normalized));
+function parseCapabilities(v) { 
+    const i = Array.isArray(v) ? v : (typeof v === 'string' ? [v] : []);
+    return Array.from(new Set(i.filter(x => typeof x === 'string').map(x => x.trim().slice(0, 80))));
 }
-
-function parseCapabilitiesFromDb(raw) {
-  try {
-    const parsed = JSON.parse(raw || '[]');
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function parseMetadataSafe(raw) {
-  try { return JSON.parse(raw || '{}'); } catch { return {}; }
-}
+function parseCapabilitiesFromDb(r) { try { const p = JSON.parse(r || '[]'); return Array.isArray(p) ? p : []; } catch { return []; } }
+function parseMetadataSafe(r) { try { return JSON.parse(r || '{}'); } catch { return {}; } }
 
 exports.handshake = async (req, res) => {
-  const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
-  const { botName, capabilities, version } = payload;
-
-  if (typeof botName !== 'string' || !botName.trim()) {
-    return res.status(400).json({ error: 'Handshake requires non-empty string "botName"' });
-  }
-
-  const normalizedBotName = botName.trim().slice(0, 120);
-  const normalizedCapabilities = parseCapabilities(capabilities).slice(0, 100);
-  const normalizedVersion = typeof version === 'string' ? version.trim().slice(0, 64) : null;
+  const { botName, capabilities, version, botId } = req.body;
+  if (!botName) return res.status(400).json({ error: 'Requires botName' });
 
   const db = getDB();
-  const nowIso = new Date().toISOString();
+  const now = new Date().toISOString();
+  const caps = JSON.stringify(parseCapabilities(capabilities));
 
   try {
-    const existing = await db.get(
-      'SELECT id FROM bots WHERE name = ? ORDER BY lastSeen DESC LIMIT 1',
-      [normalizedBotName]
-    );
-
-    if (existing?.id) {
-      await db.run(
-        'UPDATE bots SET capabilities = ?, version = ?, lastSeen = ? WHERE id = ?',
-        [JSON.stringify(normalizedCapabilities), normalizedVersion, nowIso, existing.id]
-      );
-
-      logger.info(`Bot heartbeat updated: ${normalizedBotName} (${existing.id})`);
-      return res.json({ botId: existing.id, message: `Welcome back ${normalizedBotName}` });
+    // If botId provided, prioritize updating by ID (allows persist after Rename)
+    if (botId) {
+        const existing = await db.get('SELECT id FROM bots WHERE id = ?', [botId]);
+        if (existing) {
+            await db.run('UPDATE bots SET capabilities = ?, lastSeen = ? WHERE id = ?', [caps, now, botId]);
+            return res.json({ botId, message: 'Heartbeat updated' });
+        }
     }
 
-    const botId = `bot_${randomUUID()}`;
-    await db.run(
-      'INSERT INTO bots (id, name, capabilities, version, lastSeen) VALUES (?, ?, ?, ?, ?)',
-      [botId, normalizedBotName, JSON.stringify(normalizedCapabilities), normalizedVersion, nowIso]
-    );
-    logger.info(`New bot registered in DB: ${normalizedBotName} (${botId})`);
-    return res.json({ botId, message: `Welcome ${normalizedBotName}` });
-  } catch (err) {
-    logger.error(`Database error during handshake: ${err.message}`);
-    return res.status(500).json({ error: 'Persistence failure' });
-  }
+    // Fallback to name search
+    const existingByName = await db.get('SELECT id FROM bots WHERE name = ? ORDER BY lastSeen DESC LIMIT 1', [botName]);
+    if (existingByName) {
+        await db.run('UPDATE bots SET capabilities = ?, lastSeen = ? WHERE id = ?', [caps, now, existingByName.id]);
+        return res.json({ botId: existingByName.id, message: 'Welcome back' });
+    }
+
+    const newId = botId || `bot_${randomUUID()}`;
+    await db.run('INSERT INTO bots (id, name, capabilities, version, lastSeen) VALUES (?, ?, ?, ?, ?)', [newId, botName, caps, version, now]);
+    res.json({ botId: newId, message: 'Registered' });
+  } catch (err) { res.status(500).json({ error: 'DB Error' }); }
+};
+
+exports.getBrainStatus = (req, res) => {
+    res.json({ configured: !!llmService.genAI, mode: !!llmService.genAI ? 'REAL (Gemini 2.0)' : 'SIMULATION' });
 };
 
 exports.listBots = async (req, res) => {
   try {
-    const requested = Number.parseInt(req.query?.limit, 10);
-    const limit = Number.isFinite(requested) ? Math.min(500, Math.max(1, requested)) : 100;
-
     const db = getDB();
-    const bots = await db.all('SELECT * FROM bots ORDER BY lastSeen DESC LIMIT ?', [limit]);
-    res.json({
-      data: bots.map((b) => ({ ...b, capabilities: parseCapabilitiesFromDb(b.capabilities) })),
-      limit,
-    });
-  } catch (err) {
-    logger.error(`Failed to fetch bot registry: ${err.message}`);
-    res.status(500).json({ error: 'Failed to fetch registry' });
-  }
+    const bots = await db.all('SELECT * FROM bots ORDER BY lastSeen DESC LIMIT 100');
+    res.json({ data: bots.map(b => ({ ...b, capabilities: parseCapabilitiesFromDb(b.capabilities) })) });
+  } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.assignTask = async (req, res) => {
   const { id } = req.params;
-  const payload = (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) ? req.body : {};
-  const { type = 'direct_prompt', content, targetBotId } = payload;
+  const { type = 'direct_prompt', content, targetBotId } = req.body;
+  if (!content) return res.status(400).json({ error: 'Content required' });
 
-  if (!content || typeof content !== 'string' || !content.trim()) {
-    return res.status(400).json({ error: 'Task content (string) is required.' });
-  }
-
-  const taskId = `task_${randomUUID()}`;
   const db = getDB();
-  const nowIso = new Date().toISOString();
-
   try {
-    const bot = await db.get('SELECT id, name, state, capabilities FROM bots WHERE id = ?', [id]);
-    if (!bot) return res.status(404).json({ error: 'Target bot not found.' });
-    if (bot.state === 'paused') return res.status(403).json({ error: `Agent ${bot.name} is paused.` });
+    const bot = await db.get('SELECT name, state, capabilities FROM bots WHERE id = ?', [id]);
+    if (!bot) return res.status(404).json({ error: 'Not found' });
+    if (bot.state === 'paused') return res.status(403).json({ error: 'Paused' });
 
-    let finalContent = content.trim();
-    
-    // NLP Translation for direct prompts
+    let final = content.trim();
     if (type === 'direct_prompt') {
-        const capabilities = parseCapabilitiesFromDb(bot.capabilities);
-        const nlpPrompt = `System: You are an AIIA Task Orchestrator. 
-Translate this natural language request: "${finalContent}" 
-into a precise technical command for an agent with these capabilities: [${capabilities.join(', ')}].
-
-CRITICAL: 
-- If the agent has "cmd" or "ps5", return ONLY a valid Windows CMD or PowerShell command.
-- If the agent has "bash", return ONLY a valid Bash command.
-- Do NOT use pseudocode like "rename_bot()". Use "curl" to talk to the AIIA API if needed.
-- Return ONLY the raw command string. No explanation. No markdown.`;
-        
+        const caps = parseCapabilitiesFromDb(bot.capabilities);
+        const prompt = `System: You are an AIIA Task Orchestrator. Translate: "${final}" into a command for an agent with: [${caps.join(', ')}]. 
+        CRITICAL: Return ONLY the raw shell command (CMD/PS5/Bash). No explanation. No markdown. Use "curl" for API tasks.`;
         try {
-            const translation = await llmService.getCompletion(nlpPrompt, { useCache: true });
-            finalContent = translation.content.replace(/```[a-z]*\n?|```/gi, '').trim();
-            logger.info(`NLP Translated [${content}] -> [${finalContent}] for ${bot.name}`);
-        } catch (err) {
-            logger.warn(`NLP Translation failed, using raw content: ${err.message}`);
-        }
+            const translation = await llmService.getCompletion(prompt, { useCache: true });
+            final = translation.content.replace(/```[a-z]*\n?|```/gi, '').trim();
+        } catch (e) {}
     }
 
-    const taskPayload = JSON.stringify({
-      content: finalContent,
-      originalPrompt: content.trim(),
-      targetBotId: targetBotId || null,
-    });
-
-    await db.run(
-      'INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [taskId, id, type, taskPayload, 'queued', nowIso, 0]
-    );
-
-    res.json({ taskId, status: 'queued', content: finalContent });
-  } catch (err) {
-    logger.error(`Failed to assign task: ${err.message}`);
-    res.status(500).json({ error: 'Database error' });
-  }
+    const taskId = `task_${randomUUID()}`;
+    await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+        [taskId, id, type, JSON.stringify({ content: final, originalPrompt: content.trim(), targetBotId }), 'queued', new Date().toISOString(), 0]);
+    res.json({ taskId, status: 'queued', content: final });
+  } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.listTasks = async (req, res) => {
   const { id } = req.params;
   const db = getDB();
   try {
-    const bot = await db.get('SELECT state FROM bots WHERE id = ?', [id]);
-    if (!bot || bot.state === 'paused') return res.json({ data: [] });
-
-    // Fetch queued tasks
-    const tasks = await db.all(
-        'SELECT * FROM bot_tasks WHERE bot_id = ? AND status = "queued" ORDER BY priority DESC, created_at ASC LIMIT 5', 
-        [id]
-    );
-    
+    const tasks = await db.all('SELECT * FROM bot_tasks WHERE bot_id = ? AND status = "queued" ORDER BY priority DESC, created_at ASC LIMIT 5', [id]);
     if (tasks.length > 0) {
-        const taskIds = tasks.map(t => t.id);
-        const placeholders = taskIds.map(() => '?').join(',');
-        // Mark as delivered immediately so they don't get sent again
-        await db.run(`UPDATE bot_tasks SET status = "delivered" WHERE id IN (${placeholders})`, taskIds);
+        await db.run(`UPDATE bot_tasks SET status = "delivered" WHERE id IN (${tasks.map(() => '?').join(',')})`, tasks.map(t => t.id));
     }
-
     res.json({ data: tasks.map(t => ({...t, payload: parseMetadataSafe(t.payload)})) });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch tasks' });
-  }
+  } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.getTaskHistory = async (req, res) => {
-    const { id } = req.params;
-    const db = getDB();
     try {
-        const tasks = await db.all(
-            'SELECT * FROM bot_tasks WHERE bot_id = ? ORDER BY created_at DESC LIMIT 50', 
-            [id]
-        );
+        const tasks = await getDB().all('SELECT * FROM bot_tasks WHERE bot_id = ? ORDER BY created_at DESC LIMIT 50', [req.params.id]);
         res.json({ data: tasks.map(t => ({...t, payload: parseMetadataSafe(t.payload)})) });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch history' });
-    }
+    } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.removeTask = async (req, res) => {
-    const { taskId } = req.params;
-    const db = getDB();
-    try {
-        await db.run('DELETE FROM bot_tasks WHERE id = ?', [taskId]);
-        res.json({ message: 'Task removed' });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to remove task' });
-    }
+    try { await getDB().run('DELETE FROM bot_tasks WHERE id = ?', [req.params.taskId]); res.json({ message: 'OK' }); } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.updateTaskPriority = async (req, res) => {
     const { taskId, direction } = req.params;
-    const db = getDB();
+    const delta = direction === 'up' ? 100 : -10;
     try {
-        const delta = direction === 'up' ? 10 : -10;
-        // If going up, also reset status to 'queued' so it can be picked up immediately if it was stuck
-        if (direction === 'up') {
-            await db.run('UPDATE bot_tasks SET priority = priority + ?, status = "queued" WHERE id = ?', [delta, taskId]);
-        } else {
-            await db.run('UPDATE bot_tasks SET priority = priority + ? WHERE id = ?', [delta, taskId]);
-        }
-        res.json({ message: 'Priority updated' });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to update priority' });
-    }
+        await getDB().run('UPDATE bot_tasks SET priority = priority + ?, status = "queued" WHERE id = ?', [delta, taskId]);
+        res.json({ message: 'OK' });
+    } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.completeTask = async (req, res) => {
     const { taskId } = req.params;
     const { result } = req.body;
-    const db = getDB();
     try {
-        const t = await db.get('SELECT payload FROM bot_tasks WHERE id = ?', [taskId]);
-        if (!t) return res.status(404).json({ error: 'Task not found' });
-        
-        const payload = parseMetadataSafe(t.payload);
-        payload.result = result;
-        payload.completed_at = new Date().toISOString();
-
-        await db.run(
-            'UPDATE bot_tasks SET status = "completed", payload = ? WHERE id = ?',
-            [JSON.stringify(payload), taskId]
-        );
-        res.json({ message: 'Task marked as completed' });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to complete task' });
-    }
+        const t = await getDB().get('SELECT payload FROM bot_tasks WHERE id = ?', [taskId]);
+        const p = parseMetadataSafe(t?.payload);
+        p.result = result; p.completed_at = new Date().toISOString();
+        await getDB().run('UPDATE bot_tasks SET status = "completed", payload = ? WHERE id = ?', [JSON.stringify(p), taskId]);
+        res.json({ message: 'OK' });
+    } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.updateState = async (req, res) => {
-    const { id, action } = req.params;
-    const newState = action === 'resume' ? 'active' : 'paused';
-    const db = getDB();
-    try {
-        const result = await db.run('UPDATE bots SET state = ? WHERE id = ?', [newState, id]);
-        if (result.changes === 0) return res.status(404).json({ error: 'Bot not found' });
-        res.json({ message: `Bot ${newState}` });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to update bot state' });
-    }
+    const s = req.params.action === 'resume' ? 'active' : 'paused';
+    try { await getDB().run('UPDATE bots SET state = ? WHERE id = ?', [s, req.params.id]); res.json({ message: 'OK' }); } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.removeBot = async (req, res) => {
-    const { id } = req.params;
-    const db = getDB();
     try {
-        await db.run('DELETE FROM bot_tasks WHERE bot_id = ?', [id]);
-        const result = await db.run('DELETE FROM bots WHERE id = ?', [id]);
-        if (result.changes === 0) return res.status(404).json({ error: 'Bot not found' });
-        res.json({ message: 'Bot removed' });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to remove bot' });
-    }
+        await getDB().run('DELETE FROM bot_tasks WHERE bot_id = ?', [req.params.id]);
+        await getDB().run('DELETE FROM bots WHERE id = ?', [req.params.id]);
+        res.json({ message: 'OK' });
+    } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.renameBot = async (req, res) => {
-    const { id } = req.params;
-    const { newName } = req.body;
-    
-    if (!newName || typeof newName !== 'string' || !newName.trim()) {
-        return res.status(400).json({ error: 'New name must be a non-empty string' });
-    }
-
-    const db = getDB();
-    try {
-        const result = await db.run('UPDATE bots SET name = ? WHERE id = ?', [newName.trim(), id]);
-        if (result.changes === 0) return res.status(404).json({ error: 'Bot not found' });
-        logger.info(`Bot ${id} renamed to ${newName}`);
-        res.json({ message: 'Bot renamed successfully', newName });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to rename bot' });
-    }
+    try { await getDB().run('UPDATE bots SET name = ? WHERE id = ?', [req.body.newName, req.params.id]); res.json({ message: 'OK' }); } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
 
 exports.broadcast = async (req, res) => {
-    const { id } = req.params; // Sender ID
-    const { content, type = 'direct_prompt' } = req.body;
-    
-    if (!content) return res.status(400).json({ error: 'Content required' });
-
+    const { id } = req.params;
+    const { content } = req.body;
     const db = getDB();
-    const nowIso = new Date().toISOString();
-
     try {
         const sender = await db.get('SELECT name FROM bots WHERE id = ?', [id]);
-        if (!sender) return res.status(404).json({ error: 'Sender bot not found' });
-
         const targets = await db.all('SELECT id FROM bots WHERE id != ? AND state = "active"', [id]);
-        
         for (const t of targets) {
-            const taskId = `task_${randomUUID()}`;
-            const payload = JSON.stringify({
-                content: content,
-                originalPrompt: `Broadcast from ${sender.name}: ${content}`,
-                senderId: id
-            });
-            await db.run(
-                'INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [taskId, t.id, type, payload, 'queued', nowIso, 1] // Higher priority for broadcasts
-            );
+            const p = JSON.stringify({ content, originalPrompt: `Broadcast from ${sender.name}: ${content}` });
+            await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+                [`task_${randomUUID()}`, t.id, 'direct_prompt', p, 'queued', new Date().toISOString(), 10]);
         }
-        
-        res.json({ message: `Broadcast sent to ${targets.length} agents` });
-    } catch (err) {
-        res.status(500).json({ error: 'Broadcast failed' });
-    }
+        res.json({ message: 'OK' });
+    } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
