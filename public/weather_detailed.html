@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <title>Borlänge Tactical Weather</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 2.5rem; padding: 4rem; width: 80%; max-width: 900px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2rem; }
+        .city { font-size: 3.5rem; font-weight: 900; letter-spacing: -0.02em; background: linear-gradient(to right, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .main-temp { font-size: 10rem; font-weight: 900; color: #38bdf8; line-height: 1; margin: 1rem 0; text-shadow: 0 0 40px rgba(56, 189, 248, 0.3); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
+        .stat-card { background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.03); }
+        .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: #fff; }
+        .badge { display: inline-block; padding: 0.4rem 1rem; border-radius: 2rem; background: #22c55e22; color: #22c55e; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="glass-panel">
+        <div class="header">
+            <div>
+                <div class="badge"><i class="fas fa-satellite-dish"></i> BACKBONE SYNC: LIVE</div>
+                <div class="city">BORLÄNGE, SE</div>
+            </div>
+            <div style="text-align: right; color: #94a3b8; font-size: 0.9rem;">
+                <i class="fas fa-clock"></i> 18:01:40<br>
+                TACTICAL REPORT #2284
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="main-temp">5.1°C</div>
+            <div style="text-align: right;">
+                <i class="fas fa-cloud-sun" style="font-size: 6rem; color: #f59e0b;"></i>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label"><i class="fas fa-wind"></i> Wind Speed</span>
+                <span class="stat-value">8.3 km/h</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label"><i class="fas fa-droplet"></i> Humidity</span>
+                <span class="stat-value">97%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label"><i class="fas fa-gauge"></i> Pressure</span>
+                <span class="stat-value">986.3 hPa</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: #64748b; font-style: italic;">
+            Data sourced via DataCollector agent from decentralized sensor nodes. Orchestration by StyleArchitect.
+        </div>
+    </div>
+</body>
+</html>

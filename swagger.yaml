@@ -1,0 +1,47 @@
+openapi: 3.0.0
+info:
+  title: AIIA Global AI Backbone
+  description: Standardized API for AI Agent interoperability and tool orchestration.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local Production Environment
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+  /skills:
+    get:
+      summary: List all available specialized skills
+      responses:
+        '200':
+          description: Array of skill IDs
+  /tools/summarize:
+    post:
+      summary: Summarize text for agent consumption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: The raw text to summarize.
+                ratio:
+                  type: number
+                  description: Target compression ratio (0.1 to 1.0).
+      responses:
+        '200':
+          description: Summary generated successfully
+  /tools/audit:
+    get:
+      summary: Perform an environmental health audit
+      responses:
+        '200':
+          description: Detailed report of system runtimes and tools
