@@ -20,6 +20,13 @@ async function runAgent() {
 
         let isWorking = false;
 
+        // Heartbeat Loop (Keep visible on map)
+        setInterval(async () => {
+            try {
+                await axios.post(`${AIIA_URL}/bots/handshake`, { botName, capabilities, version: '1.0.0' });
+            } catch (e) {}
+        }, 30000);
+
         setInterval(async () => {
             if (isWorking) return;
             try {

@@ -82,7 +82,7 @@
         .quickstart-tabs { display: flex; gap: 1rem; }
         .q-tab { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
         .q-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .quickstart-body { padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; color: #93c5fd; max-height: 400px; overflow-y: auto; }
+        .quickstart-body { padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; color: #93c5fd; max-height: 450px; overflow-y: auto; }
         .q-line { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .q-line:last-child { border-bottom: none; }
         .q-row { display: flex; gap: 1rem; align-items: center; }
@@ -164,7 +164,9 @@
                     <div class="map-canvas-container"><canvas id="collaboration-map"></canvas></div>
                     <div class="event-feed">
                         <div class="feed-header">Collaboration Stream</div>
-                        <div class="feed-content" id="collab-feed"></div>
+                        <div class="feed-content" id="collab-feed">
+                            <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -272,7 +274,7 @@
                 ];
                 const grid = document.getElementById('registry-grid');
                 let html = '';
-                skills.forEach(s => { html += `<div class="card"><span class="tag">Skill</span><h3>${s.toUpperCase()}</h3><p>Procedural knowledge.</p><div class="endpoint-container"><span class="endpoint-text">GET /api/v1/skills/${s}</span></div></div>`; });
+                skills.forEach(s => { html += `<div class="card"><span class="tag">Skill</span><h3>${s.toUpperCase()}</h3><p>Procedural knowledge package.</p><div class="endpoint-container"><span class="endpoint-text">GET /api/v1/skills/${s}</span></div></div>`; });
                 tools.forEach(t => { html += `<div class="card"><span class="tag" style="background:rgba(34,197,94,0.1); color:#22c55e;">Core Tool</span><h3>${t.name}</h3><p>${t.desc}</p><div class="endpoint-container"><span class="endpoint-text">${t.route}</span></div></div>`; });
                 grid.innerHTML = html;
             } catch (e) {}
@@ -315,9 +317,9 @@
         class TacticalMap {
             constructor(id) {
                 this.c = document.getElementById(id); this.ctx = this.c.getContext('2d');
-                this.bots = new Map(); this.pulses = []; this.processed = new Set();
+                this.bots = new Map(); this.zones = []; this.pulses = []; this.processed = new Set();
                 this.internet = { name: 'INTERNET', x: 0.5, y: 0.5, color: '#f472b6' };
-                this.currentTasks = [];
+                this.currentTasks = []; this.lastUpdate = Date.now();
                 window.addEventListener('resize', () => this.resize());
             }
             resize() { const r = this.c.parentElement.getBoundingClientRect(); this.c.width = r.width; this.c.height = r.height; }
@@ -329,20 +331,31 @@
                     const d = await res.json();
                     this.currentTasks = d.tasks || [];
                     const centerX = this.c.width/2, centerY = this.c.height/2;
-                    d.bots.forEach((b, i) => {
-                        const angle = (i / d.bots.length) * Math.PI * 2;
+                    
+                    const allBotIds = new Set(d.bots.map(b => b.id));
+                    d.tasks.forEach(t => allBotIds.add(t.bot_id));
+                    
+                    const botArray = Array.from(allBotIds);
+                    botArray.forEach((id, i) => {
+                        const angle = (i / (botArray.length || 1)) * Math.PI * 2;
                         const bX = centerX + Math.cos(angle) * 180, bY = centerY + Math.sin(angle) * 180;
-                        if (!this.bots.has(b.id)) {
-                            const numF = d.folders.length;
-                            const assignedFolders = d.folders.slice((i*2)%(numF||1), (i*2)%(numF||1) + 2).map((fName, j) => {
+                        
+                        if (!this.bots.has(id)) {
+                            const botData = d.bots.find(b => b.id === id);
+                            const name = botData?.name || d.tasks.find(t => t.bot_id === id)?.bot_name || 'Agent';
+                            const assignedFolders = d.folders.slice((i*2)%(d.folders.length||1), (i*2)%(d.folders.length||1) + 2).map((fName, j) => {
                                 const fAngle = angle - 0.3 + (j * 0.6);
                                 return { name: fName, x: centerX + Math.cos(fAngle) * 260, y: centerY + Math.sin(fAngle) * 260, color: '#38bdf8' };
                             });
-                            this.bots.set(b.id, { id: b.id, name: b.name, x: bX, y: bY, targetX: bX, targetY: bY, folders: assignedFolders });
+                            this.bots.set(id, { id, name, x: bX, y: bY, targetX: bX, targetY: bY, folders: assignedFolders, offset: Math.random() * 100, state: botData?.state || 'active' });
                         } else {
-                            const bot = this.bots.get(b.id); bot.targetX = bX; bot.targetY = bY;
+                            const bot = this.bots.get(id);
+                            bot.targetX = bX; bot.targetY = bY;
+                            const botData = d.bots.find(b => b.id === id);
+                            if (botData) bot.state = botData.state;
                         }
                     });
+
                     d.tasks.forEach(t => { if (!this.processed.has(t.id)) { this.triggerPulse(t); this.processed.add(t.id); } });
                     const feed = document.getElementById('collab-feed');
                     if(this.currentTasks.length) {
@@ -351,6 +364,8 @@
                                 <b>${t.bot_name}</b>: ${t.payload.content || 'Task'}
                             </div>
                         `).join('');
+                    } else {
+                        feed.innerHTML = '<div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div>';
                     }
                 } catch(e){}
             }
@@ -363,9 +378,6 @@
                     if (t.status === 'completed' || t.status === 'delivered') {
                         setTimeout(() => { this.pulses.push({ fX: centerX, fY: centerY, tX: bot.x, tY: bot.y, p: 0, c: '#f472b6', next: 'folder' }); }, 600);
                     }
-                } else if (t.payload?.targetBotId && this.bots.has(t.payload.targetBotId)) {
-                    const target = this.bots.get(t.payload.targetBotId);
-                    this.pulses.push({ fX: bot.x, fY: bot.y, tX: target.x, tY: target.y, p: 0, c: '#a855f7' });
                 } else {
                     if (bot.folders.length) {
                         const f = bot.folders[0];
@@ -374,11 +386,19 @@
                 }
             }
             up() {
-                this.bots.forEach(b => { b.x += (b.targetX - b.x)*0.1; b.y += (b.targetY - b.y)*0.1; });
+                const now = Date.now();
+                const dt = (now - this.lastUpdate) / 1000;
+                this.lastUpdate = now;
+                this.bots.forEach(b => {
+                    const driftX = Math.cos(now/1500 + b.offset) * 10;
+                    const driftY = Math.sin(now/1500 + b.offset) * 10;
+                    b.x += ((b.targetX + driftX) - b.x) * 0.05;
+                    b.y += ((b.targetY + driftY) - b.y) * 0.05;
+                });
                 this.pulses = this.pulses.filter(p => {
-                    p.p += 0.02;
+                    p.p += 1.5 * dt;
                     if (p.p >= 1 && p.next === 'folder') {
-                        const bot = Array.from(this.bots.values()).find(b => Math.abs(b.x - p.tX) < 1 && Math.abs(b.y - p.tY) < 1);
+                        const bot = Array.from(this.bots.values()).find(b => Math.abs(b.x - p.tX) < 30 && Math.abs(b.y - p.tY) < 30);
                         if (bot && bot.folders.length) {
                             const f = bot.folders[Math.floor(Math.random() * bot.folders.length)];
                             this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#f472b6' });
@@ -390,24 +410,25 @@
             dr() {
                 this.ctx.clearRect(0, 0, this.c.width, this.c.height);
                 const centerX = this.c.width / 2, centerY = this.c.height / 2;
-                const g = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 80);
-                g.addColorStop(0, '#f472b633'); g.addColorStop(1, 'transparent');
-                this.ctx.fillStyle = g; this.ctx.beginPath(); this.ctx.arc(centerX, centerY, 80, 0, Math.PI*2); this.ctx.fill();
-                this.ctx.fillStyle = '#f472b6'; this.ctx.font = '900 12px Inter'; this.ctx.fillText('INTERNET', centerX - 30, centerY + 5);
+                this.ctx.shadowBlur = 30; this.ctx.shadowColor = '#f472b6';
+                const g = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60);
+                g.addColorStop(0, '#f472b6'); g.addColorStop(1, '#f472b600');
+                this.ctx.fillStyle = g; this.ctx.beginPath(); this.ctx.arc(centerX, centerY, 60, 0, Math.PI*2); this.ctx.fill();
+                this.ctx.shadowBlur = 0;
+                this.ctx.fillStyle = '#fff'; this.ctx.font = '900 12px Inter'; this.ctx.fillText('INTERNET', centerX - 30, centerY + 5);
                 this.bots.forEach(b => {
                     this.ctx.strokeStyle = 'rgba(255,255,255,0.05)';
                     this.ctx.beginPath(); this.ctx.moveTo(centerX, centerY); this.ctx.lineTo(b.x, b.y); this.ctx.stroke();
                     b.folders.forEach(f => {
                         this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
                         this.ctx.beginPath(); this.ctx.moveTo(b.x, b.y); this.ctx.lineTo(f.x, f.y); this.ctx.stroke();
-                        this.ctx.fillStyle = '#38bdf822'; this.ctx.beginPath(); this.ctx.arc(f.x, f.y, 12, 0, Math.PI*2); this.ctx.fill();
-                        this.ctx.fillStyle = '#38bdf888'; this.ctx.font = '700 8px Inter'; this.ctx.fillText(f.name, f.x+15, f.y+3);
+                        this.ctx.fillStyle = '#38bdf822'; this.ctx.beginPath(); this.ctx.arc(f.x, f.y, 8, 0, Math.PI*2); this.ctx.fill();
                     });
-                    this.ctx.fillStyle = '#22c55e'; this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 6, 0, Math.PI*2); this.ctx.fill();
+                    this.ctx.fillStyle = b.state==='active'?'#22c55e':'#f59e0b'; this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 6, 0, Math.PI*2); this.ctx.fill();
                     this.ctx.fillStyle = '#fff'; this.ctx.font = '800 10px Inter'; this.ctx.fillText(b.name, b.x+10, b.y+4);
                 });
                 this.pulses.forEach(p => {
-                    this.ctx.shadowBlur = 10; this.ctx.shadowColor = p.c; this.ctx.strokeStyle = p.c; this.ctx.lineWidth = 2;
+                    this.ctx.shadowBlur = 15; this.ctx.shadowColor = p.c; this.ctx.strokeStyle = p.c; this.ctx.lineWidth = 3;
                     this.ctx.beginPath(); this.ctx.moveTo(p.fX, p.fY);
                     this.ctx.lineTo(p.fX + (p.tX-p.fX)*p.p, p.fY + (p.tY-p.fY)*p.p); this.ctx.stroke();
                     this.ctx.shadowBlur = 0;
@@ -427,7 +448,7 @@
             currentBotId=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
             const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
             const {data} = await res.json();
-            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td>${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
+            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
                 ${t.status === 'queued' ? `<button class="action-btn" style="padding:0.2rem 0.4rem; color:var(--success);" onclick="runNow('${t.id}')"><i class="fas fa-play"></i></button>` : ''}
                 <button class="action-btn" style="padding:0.2rem 0.5rem; color:#ef4444;" onclick="delT('${t.id}')"><i class="fas fa-trash"></i></button>
             </div></td></tr>`).join('');
