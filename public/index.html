@@ -93,101 +93,36 @@
             letter-spacing: 0.05em;
             margin-bottom: 1.25rem;
         }
-        .card h3 {
-            margin: 0 0 0.75rem 0;
-            font-size: 1.25rem;
-        }
-        .card p {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-        }
+        .card h3 { margin: 0 0 0.75rem 0; font-size: 1.25rem; }
+        .card p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 1.5rem; }
         .endpoint-container {
-            position: relative;
-            background: #000;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(255,255,255,0.05);
+            position: relative; background: #000; border-radius: 0.75rem; padding: 0.75rem 1rem;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);
         }
         .endpoint-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: #7dd3fc;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 1rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #7dd3fc;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 1rem;
         }
         .copy-btn {
-            background: rgba(255,255,255,0.05);
-            border: none;
-            color: var(--text-dim);
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            background: rgba(255,255,255,0.05); border: none; color: var(--text-dim);
+            padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
         }
-        .copy-btn:hover {
-            background: var(--accent);
-            color: #000;
-        }
-        .copy-btn.success {
-            background: var(--success);
-            color: #000;
-        }
-        .status-badge {
-            display: flex;
-            align-items: center;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--success);
-        }
-        .dot {
-            height: 8px;
-            width: 8px;
-            background-color: var(--success);
-            border-radius: 50%;
-            margin-right: 0.6rem;
-            box-shadow: 0 0 10px var(--success);
-        }
-        section h2 {
-            font-size: 1.75rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+        .copy-btn:hover { background: var(--accent); color: #000; }
+        .copy-btn.success { background: var(--success); color: #000; }
+        .status-badge { display: flex; align-items: center; font-size: 0.8rem; font-weight: 600; color: var(--success); }
+        .dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; margin-right: 0.6rem; box-shadow: 0 0 10px var(--success); }
+        section h2 { font-size: 1.75rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; }
         
         /* Modal Styles */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
         }
         .modal-overlay.active { display: flex; opacity: 1; }
-        .modal {
-            background: #0f172a;
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 2rem;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
-        }
+        .modal { background: #0f172a; border: 1px solid var(--border); border-radius: 1rem; padding: 2rem; width: 90%; max-width: 500px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
         .close-modal { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.5rem; }
         .modal-body textarea, .modal-body select, .modal-body input {
@@ -209,7 +144,7 @@
         .event-feed { background: var(--card); border: 1px solid var(--border); border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; }
         .feed-header { padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase; }
         .feed-content { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
-        .feed-item { border-left: 2px solid var(--accent); padding-left: 0.75rem; transition: all 0.2s; }
+        .feed-item { border-left: 2px solid var(--accent); padding-left: 0.75rem; transition: all 0.2s; border-color: #38bdf8; }
         .feed-item:hover { background: rgba(56, 189, 248, 0.05); }
         .view-toggle { display: flex; background: rgba(255,255,255,0.05); padding: 0.25rem; border-radius: 0.75rem; border: 1px solid var(--border); }
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; font-weight: 700; }
@@ -305,7 +240,9 @@
                     </div>
                     <div class="event-feed">
                         <div class="feed-header">Collaboration Stream</div>
-                        <div class="feed-content" id="collab-feed"></div>
+                        <div class="feed-content" id="collab-feed">
+                            <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -350,7 +287,7 @@
         <div class="modal">
             <div class="modal-header"><div class="modal-title">Rename Agent</div><button class="close-modal" onclick="closeRenameModal()">×</button></div>
             <div class="modal-body">
-                <input type="text" id="rename-input">
+                <input type="text" id="rename-input" placeholder="New agent name...">
                 <div style="display: flex; justify-content: flex-end; gap: 1rem;"><button class="action-btn" onclick="closeRenameModal()">Cancel</button><button class="action-btn" style="background: var(--accent); color: #000;" onclick="submitRename()">Apply Name</button></div>
             </div>
         </div>
@@ -360,7 +297,7 @@
         const QUICKSTART_DATA = {
             win: [
                 { label: 'Register', desc: 'Connect this machine to the backbone', cmd: 'curl -X POST http://127.0.0.1:3000/api/v1/bots/handshake -H "Content-Type: application/json" -d "{\\"botName\\":\\"WinAgent\\",\\"capabilities\\":[\\"cmd\\"]}"' },
-                { label: 'Auto-Exec', desc: 'Run a bot that executes missions instantly', cmd: 'powershell -Command "while($true){ $t=irm http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks; if($t.data){ $t.data | % { iex $_.payload.content } }; sleep 5 }"' },
+                { label: 'Auto-Exec', desc: 'Run bot that executes missions instantly', cmd: 'powershell -Command "while($true){ $t=irm http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks; if($t.data){ $t.data | % { iex $_.payload.content } }; sleep 5 }"' },
                 { label: 'Audit', desc: 'Verify local environment health', cmd: 'curl -s http://127.0.0.1:3000/api/v1/tools/audit' },
                 { label: 'LLM', desc: 'Quick completion via Gemini 2.0', cmd: 'curl -X POST http://127.0.0.1:3000/api/v1/tools/completions -H "Content-Type: application/json" -d "{\\"prompt\\":\\"Hello AIIA\\"}"' },
                 { label: 'Poll', desc: 'Check for missions (Requires YOUR_ID)', cmd: 'curl -s http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks' }
@@ -431,7 +368,7 @@
                             </div>
                         </div>
                         <p style="font-family:monospace; font-size:0.7rem;">${bot.id}</p>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem; min-height:24px;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
                         <div style="display:flex; gap:0.5rem;">
                             <button class="action-btn" onclick="openTaskModal('${bot.id}','${bot.name}')">Task</button>
                             <button class="action-btn" onclick="openInspectModal('${bot.id}','${bot.name}')">Inspect</button>
@@ -472,7 +409,8 @@
                         const angle = (i / d.bots.length) * Math.PI * 2;
                         const bX = centerX + Math.cos(angle) * 180, bY = centerY + Math.sin(angle) * 180;
                         if (!this.bots.has(b.id)) {
-                            const assignedFolders = d.folders.slice((i*2)%d.folders.length, (i*2)%d.folders.length + 2).map((fName, j) => {
+                            const numFolders = d.folders.length;
+                            const assignedFolders = d.folders.slice((i*2)%(numFolders||1), (i*2)%(numFolders||1) + 2).map((fName, j) => {
                                 const fAngle = angle - 0.3 + (j * 0.6);
                                 return { name: fName, x: centerX + Math.cos(fAngle) * 260, y: centerY + Math.sin(fAngle) * 260, color: '#38bdf8' };
                             });
@@ -489,6 +427,8 @@
                                 <b>${t.bot_name}</b>: ${t.payload.content || 'Task'}
                             </div>
                         `).join('');
+                    } else {
+                        feed.innerHTML = '<div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">No recent events.</div>';
                     }
                 } catch(e){}
             }
@@ -565,7 +505,7 @@
             cB=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
             const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
             const {data} = await res.json();
-            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td>${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem;">
+            document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
                 ${t.status === 'queued' ? `<button class="action-btn" style="padding:0.2rem 0.4rem; color:var(--success);" onclick="runNow('${t.id}')"><i class="fas fa-play"></i></button>` : ''}
                 <button class="action-btn" style="padding:0.2rem 0.5rem; color:#ef4444;" onclick="delT('${t.id}')"><i class="fas fa-trash"></i></button>
             </div></td></tr>`).join('');

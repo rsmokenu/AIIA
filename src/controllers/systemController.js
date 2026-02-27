@@ -118,12 +118,12 @@ exports.getEvents = async (req, res) => {
     const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const bots = await db.all(`SELECT id, name, lastSeen, state FROM bots WHERE lastSeen >= ?`, [since]);
 
-    // Get live workspace folders
-    const workspaceRoot = path.resolve(ROOT, '..', '..');
+    // Get live workspace folders (Scan the project root, not system root)
+    const workspaceRoot = ROOT; 
     let folders = [];
     try {
         folders = fs.readdirSync(workspaceRoot, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('.') && !['AppData', 'Application Data', 'Cookies', 'Local Settings'].includes(dirent.name))
+            .filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('.') && !['node_modules', 'logs', 'bin'].includes(dirent.name))
             .map(dirent => dirent.name)
             .slice(0, 10);
     } catch (e) {}
