@@ -35,108 +35,35 @@
             justify-content: space-between;
             align-items: center;
         }
-        .logo {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--accent);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 3rem auto;
-            padding: 0 1.5rem;
-        }
-        .hero {
-            text-align: center;
-            margin-bottom: 5rem;
-        }
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, #fff, #38bdf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-        .card {
-            background: var(--card);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border);
-            border-radius: 1.25rem;
-            padding: 2rem;
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-        }
-        .card:hover {
-            border-color: var(--accent);
-            transform: translateY(-6px);
-            box-shadow: 0 20px 40px -20px rgba(56, 189, 248, 0.3);
-        }
-        .tag {
-            display: inline-block;
-            background: rgba(56, 189, 248, 0.1);
-            color: var(--accent);
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 1.25rem;
-        }
+        .logo { font-weight: 800; font-size: 1.5rem; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        .container { max-width: 1200px; margin: 3rem auto; padding: 0 1.5rem; }
+        .hero { text-align: center; margin-bottom: 5rem; }
+        .hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(to right, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
+        .card { background: var(--card); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 1.25rem; padding: 2rem; position: relative; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+        .card:hover { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 20px 40px -20px rgba(56, 189, 248, 0.3); }
+        .tag { display: inline-block; background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; }
         .card h3 { margin: 0 0 0.75rem 0; font-size: 1.25rem; }
         .card p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 1.5rem; }
-        .endpoint-container {
-            position: relative; background: #000; border-radius: 0.75rem; padding: 0.75rem 1rem;
-            display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);
-        }
-        .endpoint-text {
-            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #7dd3fc;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 1rem;
-        }
-        .copy-btn {
-            background: rgba(255,255,255,0.05); border: none; color: var(--text-dim);
-            padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-        }
+        .endpoint-container { position: relative; background: #000; border-radius: 0.75rem; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .endpoint-text { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #7dd3fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 1rem; }
+        .copy-btn { background: rgba(255,255,255,0.05); border: none; color: var(--text-dim); padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
         .copy-btn:hover { background: var(--accent); color: #000; }
         .copy-btn.success { background: var(--success); color: #000; }
         .status-badge { display: flex; align-items: center; font-size: 0.8rem; font-weight: 600; color: var(--success); }
         .dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; margin-right: 0.6rem; box-shadow: 0 0 10px var(--success); }
         section h2 { font-size: 1.75rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; }
         
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px);
-            z-index: 1000; display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s ease;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
-        .modal { background: #0f172a; border: 1px solid var(--border); border-radius: 1rem; padding: 2rem; width: 90%; max-width: 500px; }
+        .modal { background: #0f172a; border: 1px solid var(--border); border-radius: 1rem; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
         .close-modal { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.5rem; }
-        .modal-body textarea, .modal-body select, .modal-body input {
-            width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
-            border-radius: 0.5rem; padding: 0.75rem; color: var(--text-main); font-family: inherit; margin-bottom: 1rem;
-        }
-        .action-btn {
-            background: transparent; border: 1px solid var(--border); color: var(--accent);
-            padding: 0.4rem 0.8rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;
-            font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;
-        }
+        .modal-body textarea, .modal-body select, .modal-body input { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem; color: var(--text-main); font-family: inherit; margin-bottom: 1rem; }
+        .action-btn { background: transparent; border: 1px solid var(--border); color: var(--accent); padding: 0.4rem 0.8rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
         .action-btn:hover { background: rgba(56, 189, 248, 0.1); border-color: var(--accent); }
 
-        /* Tactical View */
         #tactical-view { display: none; flex-direction: column; gap: 1.5rem; height: 700px; margin-bottom: 5rem; }
         .tactical-container { display: grid; grid-template-columns: 1fr 300px; gap: 1rem; flex: 1; min-height: 0; }
         .map-canvas-container { background: transparent; border: 1px solid var(--border); border-radius: 1rem; position: relative; overflow: hidden; }
@@ -150,13 +77,12 @@
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; font-weight: 700; }
         .toggle-btn.active { background: var(--accent); color: #000; }
 
-        /* Quickstart Box */
         .quickstart-box { background: #000; border: 1px solid var(--border); border-radius: 1rem; margin-bottom: 4rem; overflow: hidden; }
         .quickstart-header { background: rgba(255,255,255,0.03); padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .quickstart-tabs { display: flex; gap: 1rem; }
         .q-tab { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
         .q-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .quickstart-body { padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; color: #93c5fd; max-height: 450px; overflow-y: auto; }
+        .quickstart-body { padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; color: #93c5fd; max-height: 400px; overflow-y: auto; }
         .q-line { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .q-line:last-child { border-bottom: none; }
         .q-row { display: flex; gap: 1rem; align-items: center; }
@@ -235,14 +161,10 @@
             <div id="card-view" class="grid"></div>
             <div id="tactical-view">
                 <div class="tactical-container">
-                    <div class="map-canvas-container">
-                        <canvas id="collaboration-map"></canvas>
-                    </div>
+                    <div class="map-canvas-container"><canvas id="collaboration-map"></canvas></div>
                     <div class="event-feed">
                         <div class="feed-header">Collaboration Stream</div>
-                        <div class="feed-content" id="collab-feed">
-                            <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div>
-                        </div>
+                        <div class="feed-content" id="collab-feed"><div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div></div>
                     </div>
                 </div>
             </div>
@@ -296,18 +218,18 @@
     <script>
         const QUICKSTART_DATA = {
             win: [
-                { label: 'Register', desc: 'Connect this machine to the backbone', cmd: 'curl -X POST http://127.0.0.1:3000/api/v1/bots/handshake -H "Content-Type: application/json" -d "{\\"botName\\":\\"WinAgent\\",\\"capabilities\\":[\\"cmd\\"]}"' },
-                { label: 'Auto-Exec', desc: 'Run bot that executes missions instantly', cmd: 'powershell -Command "while($true){ $t=irm http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks; if($t.data){ $t.data | % { iex $_.payload.content } }; sleep 5 }"' },
-                { label: 'Audit', desc: 'Verify local environment health', cmd: 'curl -s http://127.0.0.1:3000/api/v1/tools/audit' },
-                { label: 'LLM', desc: 'Quick completion via Gemini 2.0', cmd: 'curl -X POST http://127.0.0.1:3000/api/v1/tools/completions -H "Content-Type: application/json" -d "{\\"prompt\\":\\"Hello AIIA\\"}"' },
-                { label: 'Poll', desc: 'Check for missions (Requires YOUR_ID)', cmd: 'curl -s http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks' }
+                { label: 'Register', desc: 'Connect this machine to the backbone', cmd: 'curl -X POST /api/v1/bots/handshake -H "Content-Type: application/json" -d "{\\"botName\\":\\"WinAgent\\",\\"capabilities\\":[\\"cmd\\"]}"' },
+                { label: 'Auto-Exec', desc: 'Run bot that executes missions instantly', cmd: 'powershell -Command "while($true){ $t=irm /api/v1/bots/YOUR_ID/tasks; if($t.data){ $t.data | % { iex $_.payload.content } }; sleep 5 }"' },
+                { label: 'Audit', desc: 'Verify local environment health', cmd: 'curl -s /api/v1/tools/audit' },
+                { label: 'LLM', desc: 'Quick completion via Gemini 2.0', cmd: 'curl -X POST /api/v1/tools/completions -H "Content-Type: application/json" -d "{\\"prompt\\":\\"Hello AIIA\\"}"' },
+                { label: 'Poll', desc: 'Check for missions (Requires YOUR_ID)', cmd: 'curl -s /api/v1/bots/YOUR_ID/tasks' }
             ],
             lin: [
-                { label: 'Register', desc: 'Connect linux bot to network', cmd: 'curl -X POST http://127.0.0.1:3000/api/v1/bots/handshake -H "Content-Type: application/json" -d \'{"botName":"LinBot","capabilities":["bash"]}\'' },
-                { label: 'Auto-Exec', desc: 'Run bot that executes missions via eval', cmd: 'while true; do curl -s http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks | jq -r \'.data[].payload.content\' | while read cmd; do eval "$cmd"; done; sleep 5; done' },
-                { label: 'Audit', desc: 'Check linux runtime health', cmd: 'curl -s http://127.0.0.1:3000/api/v1/tools/audit' },
-                { label: 'LLM', desc: 'Request Gemini completion', cmd: 'curl -X POST http://127.0.0.1:3000/api/v1/tools/completions -H "Content-Type: application/json" -d \'{"prompt":"Hello"}\'' },
-                { label: 'Poll Tasks', desc: 'Fetch queued missions', cmd: 'curl -s http://127.0.0.1:3000/api/v1/bots/YOUR_ID/tasks' }
+                { label: 'Register', desc: 'Connect linux bot to network', cmd: 'curl -X POST /api/v1/bots/handshake -H "Content-Type: application/json" -d \'{"botName":"LinBot","capabilities":["bash"]}\'' },
+                { label: 'Auto-Exec', desc: 'Run bot that executes missions via eval', cmd: 'while true; do curl -s /api/v1/bots/YOUR_ID/tasks | jq -r \'.data[].payload.content\' | while read cmd; do eval "$cmd"; done; sleep 5; done' },
+                { label: 'Audit', desc: 'Check linux runtime health', cmd: 'curl -s /api/v1/tools/audit' },
+                { label: 'LLM', desc: 'Request Gemini completion', cmd: 'curl -X POST /api/v1/tools/completions -H "Content-Type: application/json" -d \'{"prompt":"Hello"}\'' },
+                { label: 'Poll Tasks', desc: 'Fetch queued missions', cmd: 'curl -s /api/v1/bots/YOUR_ID/tasks' }
             ]
         };
 
@@ -315,21 +237,23 @@
             document.getElementById('tab-win').classList.toggle('active', plat === 'win');
             document.getElementById('tab-lin').classList.toggle('active', plat === 'lin');
             const body = document.getElementById('quickstart-body');
-            body.innerHTML = QUICKSTART_DATA[plat].map((line, idx) => `
+            const origin = window.location.origin;
+            body.innerHTML = QUICKSTART_DATA[plat].map((line, idx) => {
+                const finalCmd = line.cmd.startsWith('/') ? origin + line.cmd : line.cmd;
+                return `
                 <div class="q-line">
                     <div class="q-desc">${line.desc}</div>
                     <div class="q-row">
                         <div style="width: 100px; font-weight:800; color:var(--accent); font-size:0.75rem;">${line.label}</div>
-                        <div class="q-cmd">${line.cmd.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
-                        <div class="q-copy" onclick="copyRaw('${plat}', ${idx}, this)"><i class="far fa-copy"></i></div>
+                        <div class="q-cmd">${finalCmd.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+                        <div class="q-copy" onclick="copyRawText('${btoa(finalCmd)}', this)"><i class="far fa-copy"></i></div>
                     </div>
                 </div>
-            `).join('');
+            `;}).join('');
         }
 
-        function copyRaw(plat, idx, el) {
-            const cmd = QUICKSTART_DATA[plat][idx].cmd;
-            navigator.clipboard.writeText(cmd).then(() => {
+        function copyRawText(b64, el) {
+            navigator.clipboard.writeText(atob(b64)).then(() => {
                 const icon = el.querySelector('i'); icon.className = 'fas fa-check'; icon.style.color = 'var(--success)';
                 setTimeout(() => { icon.className = 'far fa-copy'; icon.style.color = ''; }, 2000);
             });
@@ -368,7 +292,7 @@
                             </div>
                         </div>
                         <p style="font-family:monospace; font-size:0.7rem;">${bot.id}</p>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem; min-height:24px;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
                         <div style="display:flex; gap:0.5rem;">
                             <button class="action-btn" onclick="openTaskModal('${bot.id}','${bot.name}')">Task</button>
                             <button class="action-btn" onclick="openInspectModal('${bot.id}','${bot.name}')">Inspect</button>
@@ -409,8 +333,8 @@
                         const angle = (i / d.bots.length) * Math.PI * 2;
                         const bX = centerX + Math.cos(angle) * 180, bY = centerY + Math.sin(angle) * 180;
                         if (!this.bots.has(b.id)) {
-                            const numFolders = d.folders.length;
-                            const assignedFolders = d.folders.slice((i*2)%(numFolders||1), (i*2)%(numFolders||1) + 2).map((fName, j) => {
+                            const numF = d.folders.length;
+                            const assignedFolders = d.folders.slice((i*2)%(numF||1), (i*2)%(numF||1) + 2).map((fName, j) => {
                                 const fAngle = angle - 0.3 + (j * 0.6);
                                 return { name: fName, x: centerX + Math.cos(fAngle) * 260, y: centerY + Math.sin(fAngle) * 260, color: '#38bdf8' };
                             });
@@ -493,16 +417,16 @@
             }
         }
 
-        let cB = null;
-        function openTaskModal(id,n){ cB=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
+        let currentBotId = null;
+        function openTaskModal(id,n){ currentBotId=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
         function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); setTimeout(()=>document.getElementById('modal-overlay').style.display='none',300); }
         async function submitTask(){
             const content = document.getElementById('modal-input').value; if(!content) return;
-            await fetch(`/api/v1/bots/${cB}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
+            await fetch(`/api/v1/bots/${currentBotId}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
             closeModal(); document.getElementById('modal-input').value='';
         }
         async function openInspectModal(id,n){
-            cB=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
+            currentBotId=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
             const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
             const {data} = await res.json();
             document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
@@ -511,11 +435,10 @@
             </div></td></tr>`).join('');
         }
         function closeInspectModal(){ document.getElementById('inspect-modal').classList.remove('active'); setTimeout(()=>document.getElementById('inspect-modal').style.display='none',300); }
-        async function delT(id){ await fetch(`/api/v1/bots/${cB}/tasks/${id}`, {method:'DELETE'}); openInspectModal(cB, ''); }
-        async function runNow(id){ await fetch(`/api/v1/bots/${cB}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(cB, ''); }
+        async function delT(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}`, {method:'DELETE'}); openInspectModal(currentBotId, ''); }
+        async function runNow(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(currentBotId, ''); }
         async function updateBotState(id,a){ await fetch(`/api/v1/bots/${id}/${a}`, {method:'POST'}); loadBots(); }
 
-        /* Broadcast & Rename */
         function openBroadcastModal() { document.getElementById('broadcast-modal').style.display='flex'; document.getElementById('broadcast-modal').classList.add('active'); }
         function closeBroadcastModal() { document.getElementById('broadcast-modal').classList.remove('active'); setTimeout(()=>document.getElementById('broadcast-modal').style.display='none',300); }
         async function submitBroadcast() {
