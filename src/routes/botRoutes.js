@@ -12,5 +12,7 @@ router.delete('/:id/tasks/:taskId', botController.removeTask);
 router.post('/:id/tasks/:taskId/priority/:direction(up|down)', botController.updateTaskPriority);
 router.post('/:id/:action(stop|resume)', botController.updateState);
 router.delete('/:id', botController.removeBot);
+router.post('/:id/rename', botController.renameBot);
+router.post('/:id/broadcast', botController.broadcast);
 
 module.exports = router;

@@ -255,3 +255,56 @@ exports.removeBot = async (req, res) => {
         res.status(500).json({ error: 'Failed to remove bot' });
     }
 };
+
+exports.renameBot = async (req, res) => {
+    const { id } = req.params;
+    const { newName } = req.body;
+    
+    if (!newName || typeof newName !== 'string' || !newName.trim()) {
+        return res.status(400).json({ error: 'New name must be a non-empty string' });
+    }
+
+    const db = getDB();
+    try {
+        const result = await db.run('UPDATE bots SET name = ? WHERE id = ?', [newName.trim(), id]);
+        if (result.changes === 0) return res.status(404).json({ error: 'Bot not found' });
+        logger.info(`Bot ${id} renamed to ${newName}`);
+        res.json({ message: 'Bot renamed successfully', newName });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to rename bot' });
+    }
+};
+
+exports.broadcast = async (req, res) => {
+    const { id } = req.params; // Sender ID
+    const { content, type = 'direct_prompt' } = req.body;
+    
+    if (!content) return res.status(400).json({ error: 'Content required' });
+
+    const db = getDB();
+    const nowIso = new Date().toISOString();
+
+    try {
+        const sender = await db.get('SELECT name FROM bots WHERE id = ?', [id]);
+        if (!sender) return res.status(404).json({ error: 'Sender bot not found' });
+
+        const targets = await db.all('SELECT id FROM bots WHERE id != ? AND state = "active"', [id]);
+        
+        for (const t of targets) {
+            const taskId = `task_${randomUUID()}`;
+            const payload = JSON.stringify({
+                content: content,
+                originalPrompt: `Broadcast from ${sender.name}: ${content}`,
+                senderId: id
+            });
+            await db.run(
+                'INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [taskId, t.id, type, payload, 'queued', nowIso, 1] // Higher priority for broadcasts
+            );
+        }
+        
+        res.json({ message: `Broadcast sent to ${targets.length} agents` });
+    } catch (err) {
+        res.status(500).json({ error: 'Broadcast failed' });
+    }
+};
