@@ -274,7 +274,7 @@
                 ];
                 const grid = document.getElementById('registry-grid');
                 let html = '';
-                skills.forEach(s => { html += `<div class="card"><span class="tag">Skill</span><h3>${s.toUpperCase()}</h3><p>Procedural knowledge package.</p><div class="endpoint-container"><span class="endpoint-text">GET /api/v1/skills/${s}</span></div></div>`; });
+                skills.forEach(s => { html += `<div class="card"><span class="tag">Skill</span><h3>${s.toUpperCase()}</h3><p>Procedural knowledge.</p><div class="endpoint-container"><span class="endpoint-text">GET /api/v1/skills/${s}</span></div></div>`; });
                 tools.forEach(t => { html += `<div class="card"><span class="tag" style="background:rgba(34,197,94,0.1); color:#22c55e;">Core Tool</span><h3>${t.name}</h3><p>${t.desc}</p><div class="endpoint-container"><span class="endpoint-text">${t.route}</span></div></div>`; });
                 grid.innerHTML = html;
             } catch (e) {}
@@ -343,7 +343,8 @@
                         if (!this.bots.has(id)) {
                             const botData = d.bots.find(b => b.id === id);
                             const name = botData?.name || d.tasks.find(t => t.bot_id === id)?.bot_name || 'Agent';
-                            const assignedFolders = d.folders.slice((i*2)%(d.folders.length||1), (i*2)%(d.folders.length||1) + 2).map((fName, j) => {
+                            const numF = d.folders.length;
+                            const assignedFolders = d.folders.slice((i*2)%(numF||1), (i*2)%(numF||1) + 2).map((fName, j) => {
                                 const fAngle = angle - 0.3 + (j * 0.6);
                                 return { name: fName, x: centerX + Math.cos(fAngle) * 260, y: centerY + Math.sin(fAngle) * 260, color: '#38bdf8' };
                             });
@@ -374,14 +375,14 @@
                 const centerX = this.c.width / 2, centerY = this.c.height / 2;
                 const isW = t.payload?.content?.toLowerCase().includes('http') || t.type === 'web_request';
                 if (isW) {
-                    this.pulses.push({ fX: bot.x, fY: bot.y, tX: centerX, tY: centerY, p: 0, c: '#06b6d4' });
+                    this.pulses.push({ fX: bot.x, fY: bot.y, tX: centerX, tY: centerY, p: 0, c: '#06b6d4', botId: t.bot_id });
                     if (t.status === 'completed' || t.status === 'delivered') {
-                        setTimeout(() => { this.pulses.push({ fX: centerX, fY: centerY, tX: bot.x, tY: bot.y, p: 0, c: '#f472b6', next: 'folder' }); }, 600);
+                        setTimeout(() => { this.pulses.push({ fX: centerX, fY: centerY, tX: bot.x, tY: bot.y, p: 0, c: '#f472b6', next: 'folder', botId: t.bot_id }); }, 600);
                     }
                 } else {
                     if (bot.folders.length) {
                         const f = bot.folders[0];
-                        this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#38bdf8' });
+                        this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#38bdf8', botId: t.bot_id });
                     }
                 }
             }
@@ -397,11 +398,16 @@
                 });
                 this.pulses = this.pulses.filter(p => {
                     p.p += 1.5 * dt;
+                    // Dynamic tracking: If the laser is attached to a bot, update start/end
+                    const bot = this.bots.get(p.botId);
+                    if (bot) {
+                        if (p.c === '#06b6d4') { p.fX = bot.x; p.fY = bot.y; }
+                        else if (p.c === '#f472b6') { p.tX = bot.x; p.tY = bot.y; }
+                    }
                     if (p.p >= 1 && p.next === 'folder') {
-                        const bot = Array.from(this.bots.values()).find(b => Math.abs(b.x - p.tX) < 30 && Math.abs(b.y - p.tY) < 30);
                         if (bot && bot.folders.length) {
                             const f = bot.folders[Math.floor(Math.random() * bot.folders.length)];
-                            this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#f472b6' });
+                            this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#f472b6', botId: bot.id });
                         }
                     }
                     return p.p < 1;
@@ -429,23 +435,25 @@
                 });
                 this.pulses.forEach(p => {
                     this.ctx.shadowBlur = 15; this.ctx.shadowColor = p.c; this.ctx.strokeStyle = p.c; this.ctx.lineWidth = 3;
-                    this.ctx.beginPath(); this.ctx.moveTo(p.fX, p.fY);
-                    this.ctx.lineTo(p.fX + (p.tX-p.fX)*p.p, p.fY + (p.tY-p.fY)*p.p); this.ctx.stroke();
+                    const curX = p.fX + (p.tX-p.fX)*p.p, curY = p.fY + (p.tY-p.fY)*p.p;
+                    const tailX = p.fX + (p.tX-p.fX)*Math.max(0,p.p-0.1), tailY = p.fY + (p.tY-p.fY)*Math.max(0,p.p-0.1);
+                    this.ctx.beginPath(); this.ctx.moveTo(tailX, tailY); this.ctx.lineTo(curX, curY); this.ctx.stroke();
+                    this.ctx.fillStyle = '#fff'; this.ctx.beginPath(); this.ctx.arc(curX, curY, 2, 0, Math.PI*2); this.ctx.fill();
                     this.ctx.shadowBlur = 0;
                 });
             }
         }
 
-        let currentBotId = null;
-        function openTaskModal(id,n){ currentBotId=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
+        let cB = null;
+        function openTaskModal(id,n){ cB=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
         function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); setTimeout(()=>document.getElementById('modal-overlay').style.display='none',300); }
         async function submitTask(){
             const content = document.getElementById('modal-input').value; if(!content) return;
-            await fetch(`/api/v1/bots/${currentBotId}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
+            await fetch(`/api/v1/bots/${cB}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
             closeModal(); document.getElementById('modal-input').value='';
         }
         async function openInspectModal(id,n){
-            currentBotId=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
+            cB=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
             const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
             const {data} = await res.json();
             document.getElementById('inspect-task-body').innerHTML = data.map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
@@ -454,8 +462,8 @@
             </div></td></tr>`).join('');
         }
         function closeInspectModal(){ document.getElementById('inspect-modal').classList.remove('active'); setTimeout(()=>document.getElementById('inspect-modal').style.display='none',300); }
-        async function delT(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}`, {method:'DELETE'}); openInspectModal(currentBotId, ''); }
-        async function runNow(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(currentBotId, ''); }
+        async function delT(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}`, {method:'DELETE'}); openInspectModal(cB, ''); }
+        async function runNow(id){ await fetch(`/api/v1/bots/${cB}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(cB, ''); }
         async function updateBotState(id,a){ await fetch(`/api/v1/bots/${id}/${a}`, {method:'POST'}); loadBots(); }
 
         function openBroadcastModal() { document.getElementById('broadcast-modal').style.display='flex'; document.getElementById('broadcast-modal').classList.add('active'); }
