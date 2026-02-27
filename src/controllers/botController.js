@@ -154,14 +154,16 @@ exports.listTasks = async (req, res) => {
     const bot = await db.get('SELECT state FROM bots WHERE id = ?', [id]);
     if (!bot || bot.state === 'paused') return res.json({ data: [] });
 
+    // Fetch queued tasks
     const tasks = await db.all(
-        'SELECT * FROM bot_tasks WHERE bot_id = ? AND status = "queued" ORDER BY priority DESC, created_at ASC LIMIT 20', 
+        'SELECT * FROM bot_tasks WHERE bot_id = ? AND status = "queued" ORDER BY priority DESC, created_at ASC LIMIT 5', 
         [id]
     );
     
     if (tasks.length > 0) {
         const taskIds = tasks.map(t => t.id);
         const placeholders = taskIds.map(() => '?').join(',');
+        // Mark as delivered immediately so they don't get sent again
         await db.run(`UPDATE bot_tasks SET status = "delivered" WHERE id IN (${placeholders})`, taskIds);
     }
 
@@ -176,7 +178,7 @@ exports.getTaskHistory = async (req, res) => {
     const db = getDB();
     try {
         const tasks = await db.all(
-            'SELECT * FROM bot_tasks WHERE bot_id = ? ORDER BY status DESC, priority DESC, created_at DESC LIMIT 50', 
+            'SELECT * FROM bot_tasks WHERE bot_id = ? ORDER BY created_at DESC LIMIT 50', 
             [id]
         );
         res.json({ data: tasks.map(t => ({...t, payload: parseMetadataSafe(t.payload)})) });
@@ -200,7 +202,7 @@ exports.updateTaskPriority = async (req, res) => {
     const { taskId, direction } = req.params;
     const db = getDB();
     try {
-        const delta = direction === 'up' ? 1 : -1;
+        const delta = direction === 'up' ? 10 : -10; // Use larger jump for "Run Now" feel
         await db.run('UPDATE bot_tasks SET priority = priority + ? WHERE id = ?', [delta, taskId]);
         res.json({ message: 'Priority updated' });
     } catch (err) {

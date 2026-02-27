@@ -443,10 +443,25 @@
         function closeBroadcastModal() { document.getElementById('broadcast-modal').classList.remove('active'); setTimeout(()=>document.getElementById('broadcast-modal').style.display='none',300); }
         async function submitBroadcast() {
             const content = document.getElementById('broadcast-input').value; if(!content) return;
-            const res = await fetch('/api/v1/bots/registry'); const {data} = await res.json();
-            const sender = data[0]?.id; if(!sender) return alert('No agents online');
-            await fetch(`/api/v1/bots/${sender}/broadcast`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
-            closeBroadcastModal(); document.getElementById('broadcast-input').value='';
+            try {
+                const res = await fetch('/api/v1/bots/registry');
+                const {data} = await res.json();
+                // Find any active bot to be the sender
+                const activeBots = data.filter(b => b.state === 'active');
+                if(!activeBots.length) return alert('No active agents online to broadcast');
+                const sender = activeBots[0].id;
+                
+                const bRes = await fetch(`/api/v1/bots/${sender}/broadcast`, { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({ content, type: 'direct_prompt' }) 
+                });
+                if (bRes.ok) {
+                    closeBroadcastModal(); 
+                    document.getElementById('broadcast-input').value='';
+                    alert('Broadcast Sent!');
+                }
+            } catch (err) { alert('Broadcast failed: ' + err.message); }
         }
 
         let renameTargetId = null;
