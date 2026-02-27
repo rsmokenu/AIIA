@@ -117,8 +117,12 @@ exports.assignTask = async (req, res) => {
         const nlpPrompt = `System: You are an AIIA Task Orchestrator. 
 Translate this natural language request: "${finalContent}" 
 into a precise technical command for an agent with these capabilities: [${capabilities.join(', ')}].
-If it's a shell command, return ONLY the command string (e.g. "ls -la" or "Restart-Computer").
-Return ONLY the formatted command, no explanation. Do not wrap in markdown.`;
+
+CRITICAL: 
+- If the agent has "cmd" or "ps5", return ONLY a valid Windows CMD or PowerShell command.
+- If the agent has "bash", return ONLY a valid Bash command.
+- Do NOT use pseudocode like "rename_bot()". Use "curl" to talk to the AIIA API if needed.
+- Return ONLY the raw command string. No explanation. No markdown.`;
         
         try {
             const translation = await llmService.getCompletion(nlpPrompt, { useCache: true });

@@ -1,32 +1,23 @@
 const axios = require('axios');
+const { exec } = require('child_process');
 
 const [,, botName, capabilitiesRaw] = process.argv;
 const capabilities = capabilitiesRaw ? capabilitiesRaw.split(',') : ['general'];
-
-// Use environment variable or default to local loopback
 const AIIA_URL = process.env.AIIA_URL || 'http://127.0.0.1:3000/api/v1';
 
 async function runAgent() {
-    console.log(`[${botName}] Initializing with backbone: ${AIIA_URL}`);
+    console.log(`[${botName}] REAL AGENT ONLINE: ${AIIA_URL}`);
     
     try {
         const handshake = await axios.post(`${AIIA_URL}/bots/handshake`, {
-            botName,
-            capabilities,
-            version: '1.0.0'
+            botName, capabilities, version: '1.0.0'
         });
         const botId = handshake.data.botId;
-        console.log(`[${botName}] Registered: ${botId}`);
+
+        // Heartbeat
+        setInterval(() => axios.post(`${AIIA_URL}/bots/handshake`, { botName, capabilities }), 30000);
 
         let isWorking = false;
-
-        // Heartbeat Loop (Keep visible on map)
-        setInterval(async () => {
-            try {
-                await axios.post(`${AIIA_URL}/bots/handshake`, { botName, capabilities, version: '1.0.0' });
-            } catch (e) {}
-        }, 30000);
-
         setInterval(async () => {
             if (isWorking) return;
             try {
@@ -36,31 +27,21 @@ async function runAgent() {
                 if (tasks.length > 0) {
                     isWorking = true;
                     for (const task of tasks) {
-                        const content = task.payload.content || task.payload;
-                        console.log(`[${botName}] Executing: ${content}`);
+                        const cmd = task.payload.content || task.payload;
+                        console.log(`[${botName}] EXEC: ${cmd}`);
                         
-                        // Simulate work duration
-                        await new Promise(r => setTimeout(r, 2000 + Math.random() * 2000));
-                        
-                        try {
-                            await axios.post(`${AIIA_URL}/bots/${botId}/tasks/${task.id}/complete`, {
-                                result: `Successfully completed by ${botName}`
-                            });
-                            console.log(`[${botName}] Task Finalized: ${task.id}`);
-                        } catch (err) {
-                            console.error(`[${botName}] Completion report failed: ${err.message}`);
-                        }
+                        exec(cmd, async (error, stdout, stderr) => {
+                            let result = stdout || stderr || 'Executed (No output)';
+                            if (error) result = `Error: ${error.message}`;
+                            
+                            await axios.post(`${AIIA_URL}/bots/${botId}/tasks/${task.id}/complete`, { result });
+                            console.log(`[${botName}] FINISHED: ${task.id}`);
+                        });
                     }
                     isWorking = false;
                 }
-            } catch (e) {
-                // Silently poll
-            }
+            } catch (e) {}
         }, 3000);
-
-    } catch (err) {
-        console.error(`[${botName}] CRITICAL: Start failed: ${err.message}`);
-    }
+    } catch (err) { console.error(`[${botName}] Start failed: ${err.message}`); }
 }
-
 runAgent();
