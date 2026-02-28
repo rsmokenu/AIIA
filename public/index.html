@@ -490,20 +490,26 @@
 
         async function refreshLiveStatus() {
             try {
-                const bRes = await fetch('/api/v1/bots/brain-status'); const bData = await bRes.json();
-                const bEl = document.getElementById('brain-status');
-                bEl.textContent = 'BRAIN: ' + bData.mode;
-                bEl.style.color = bData.configured ? 'var(--success)' : '#ef4444';
-                bEl.style.borderColor = bData.configured ? 'var(--success)' : '#ef4444';
+                const bRes = await fetch('/api/v1/bots/brain-status');
+                if (bRes.ok) {
+                    const bData = await bRes.json();
+                    const bEl = document.getElementById('brain-status');
+                    bEl.textContent = 'BRAIN: ' + (bData.mode || 'REAL');
+                    bEl.style.color = bData.configured ? 'var(--success)' : '#ef4444';
+                    bEl.style.borderColor = bData.configured ? 'var(--success)' : '#ef4444';
+                }
 
-                const res = await fetch('/api/v1/system/status'); const d = await res.json();
-                document.getElementById('live-meta').innerHTML = `<span><b>Status:</b> ${d.status.toUpperCase()}</span> <span><b>Agents:</b> ${d.botCount}</span> <span><b>Uptime:</b> ${d.uptimeSec}s</span> <span style="margin-left:auto; opacity:0.6; font-size:0.75rem;">Synced: ${new Date().toLocaleTimeString()}</span>`;
-                document.getElementById('live-events').innerHTML = (d.recentEvents || []).map(e => {
-                    let msg = e; try { const p = JSON.parse(e); const t = new Date(p.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); msg = `<span style="color:var(--text-dim)">[${t}]</span> ${p.message}`; } catch(err) {}
-                    return `<div style="margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${msg}</div>`;
-                }).join('');
-                document.getElementById('live-code').innerHTML = (d.recentCodeChanges || []).map(c => `<div style="display:flex; justify-content:space-between;"><span>${c.file}</span><span style="color:var(--text-dim); font-size:0.7rem;">${c.ageSec < 60 ? c.ageSec+'s' : Math.floor(c.ageSec/60)+'m'} ago</span></div>`).join('') || '<div>No recent changes</div>';
-            } catch(e){}
+                const res = await fetch('/api/v1/system/status');
+                if (res.ok) {
+                    const d = await res.json();
+                    document.getElementById('live-meta').innerHTML = `<span><b>Status:</b> ${d.status.toUpperCase()}</span> <span><b>Agents:</b> ${d.botCount}</span> <span><b>Uptime:</b> ${d.uptimeSec}s</span> <span style="margin-left:auto; opacity:0.6; font-size:0.75rem;">Synced: ${new Date().toLocaleTimeString()}</span>`;
+                    document.getElementById('live-events').innerHTML = (d.recentEvents || []).map(e => {
+                        let msg = e; try { const p = JSON.parse(e); const t = new Date(p.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); msg = `<span style="color:var(--text-dim)">[${t}]</span> ${p.message}`; } catch(err) {}
+                        return `<div style="margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${msg}</div>`;
+                    }).join('');
+                    document.getElementById('live-code').innerHTML = (d.recentCodeChanges || []).map(c => `<div style="display:flex; justify-content:space-between;"><span>${c.file}</span><span style="color:var(--text-dim); font-size:0.7rem;">${c.ageSec < 60 ? c.ageSec+'s' : Math.floor(c.ageSec/60)+'m'} ago</span></div>`).join('') || '<div>No recent changes</div>';
+                }
+            } catch(e){ console.error("Status Sync Error", e); }
         }
 
         window.onload = () => {
