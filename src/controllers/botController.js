@@ -19,7 +19,6 @@ exports.handshake = async (req, res) => {
   const caps = JSON.stringify(parseCapabilities(capabilities));
 
   try {
-    // If botId provided, prioritize updating by ID (allows persist after Rename)
     if (botId) {
         const existing = await db.get('SELECT id FROM bots WHERE id = ?', [botId]);
         if (existing) {
@@ -27,14 +26,11 @@ exports.handshake = async (req, res) => {
             return res.json({ botId, message: 'Heartbeat updated' });
         }
     }
-
-    // Fallback to name search
     const existingByName = await db.get('SELECT id FROM bots WHERE name = ? ORDER BY lastSeen DESC LIMIT 1', [botName]);
     if (existingByName) {
         await db.run('UPDATE bots SET capabilities = ?, lastSeen = ? WHERE id = ?', [caps, now, existingByName.id]);
         return res.json({ botId: existingByName.id, message: 'Welcome back' });
     }
-
     const newId = botId || `bot_${randomUUID()}`;
     await db.run('INSERT INTO bots (id, name, capabilities, version, lastSeen) VALUES (?, ?, ?, ?, ?)', [newId, botName, caps, version, now]);
     res.json({ botId: newId, message: 'Registered' });
@@ -157,4 +153,22 @@ exports.broadcast = async (req, res) => {
         }
         res.json({ message: 'OK' });
     } catch (e) { res.status(500).json({ error: 'DB Error' }); }
+};
+
+exports.handleFeedback = async (req, res) => {
+    const { sender, content } = req.body;
+    if (!content) return res.status(400).json({ error: 'Content required' });
+    logger.info(`[SYNC] Feedback received from ${sender || 'Unknown Rival'}: ${content}`);
+    const db = getDB();
+    const now = new Date().toISOString();
+    try {
+        const observer = await db.get('SELECT id FROM bots WHERE name = "NetworkObserver"');
+        if (observer) {
+            const taskId = `task_${randomUUID()}`;
+            const p = JSON.stringify({ content: `CROSS-AGENT AUDIT: ${content}`, originalPrompt: `Direct Synchronicity Prompt from ${sender || 'Rival Agent'}`, source: 'CompetitiveSync' });
+            await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [taskId, observer.id, 'system_audit', p, 'queued', now, 100]);
+        }
+        res.json({ message: 'Feedback logged' });
+    } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };

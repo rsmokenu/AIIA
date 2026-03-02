@@ -5,6 +5,7 @@ const botController = require('../controllers/botController');
 router.post('/handshake', botController.handshake);
 router.get('/registry', botController.listBots);
 router.get('/brain-status', botController.getBrainStatus);
+router.post('/feedback', botController.handleFeedback);
 router.post('/:id/tasks', botController.assignTask);
 router.get('/:id/tasks', botController.listTasks);
 router.get('/:id/tasks/history', botController.getTaskHistory);
