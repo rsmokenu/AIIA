@@ -6,53 +6,19 @@
     <title>AIIA | AI Infra Arch</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --bg: #0f172a;
-            --card: rgba(30, 41, 59, 0.4);
-            --border: rgba(51, 65, 85, 0.5);
-            --accent: #38bdf8;
-            --text-main: #f1f5f9;
-            --text-dim: #94a3b8;
-            --success: #22c55e;
-        }
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: radial-gradient(circle at top left, #1e293b, #0f172a);
-            color: var(--text-main);
-            margin: 0;
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-        .navbar {
-            padding: 1rem 2rem;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        :root { --bg: #0f172a; --card: rgba(30, 41, 59, 0.4); --border: rgba(51, 65, 85, 0.5); --accent: #38bdf8; --text-main: #f1f5f9; --text-dim: #94a3b8; --success: #22c55e; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top left, #1e293b, #0f172a); color: var(--text-main); margin: 0; min-height: 100vh; line-height: 1.6; }
+        .navbar { padding: 1rem 2rem; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-weight: 800; font-size: 1.5rem; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
         .container { max-width: 1200px; margin: 3rem auto; padding: 0 1.5rem; }
-        .hero { text-align: center; margin-bottom: 5rem; }
-        .hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(to right, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
-        .card { background: var(--card); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 1.25rem; padding: 2rem; position: relative; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
-        .card:hover { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 20px 40px -20px rgba(56, 189, 248, 0.3); }
-        .tag { display: inline-block; background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; }
-        .card h3 { margin: 0 0 0.75rem 0; font-size: 1.25rem; }
-        .card p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 1.5rem; }
-        .endpoint-container { position: relative; background: #000; border-radius: 0.75rem; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .endpoint-text { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #7dd3fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 1rem; }
-        .copy-btn { background: rgba(255,255,255,0.05); border: none; color: var(--text-dim); padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-        .copy-btn:hover { background: var(--accent); color: #000; }
-        .copy-btn.success { background: var(--success); color: #000; }
+        .card { background: var(--card); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 1.25rem; padding: 2rem; position: relative; transition: all 0.4s; overflow: hidden; }
+        .card:hover { border-color: var(--accent); transform: translateY(-6px); }
+        .tag { display: inline-block; background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1.25rem; }
         .status-badge { display: flex; align-items: center; font-size: 0.8rem; font-weight: 600; color: var(--success); }
         .dot { height: 8px; width: 8px; background-color: var(--success); border-radius: 50%; margin-right: 0.6rem; box-shadow: 0 0 10px var(--success); }
-        section h2 { font-size: 1.75rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; }
+        .action-btn { background: transparent; border: 1px solid var(--border); color: var(--accent); padding: 0.4rem 0.8rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
+        .action-btn:hover { background: rgba(56, 189, 248, 0.1); border-color: var(--accent); }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
@@ -60,9 +26,7 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
         .close-modal { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.5rem; }
-        .modal-body textarea, .modal-body select, .modal-body input { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem; color: var(--text-main); font-family: inherit; margin-bottom: 1rem; }
-        .action-btn { background: transparent; border: 1px solid var(--border); color: var(--accent); padding: 0.4rem 0.8rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
-        .action-btn:hover { background: rgba(56, 189, 248, 0.1); border-color: var(--accent); }
+        .modal-body textarea, .modal-body input { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem; color: var(--text-main); font-family: inherit; margin-bottom: 1rem; box-sizing: border-box; }
 
         #tactical-view { display: none; flex-direction: column; gap: 1.5rem; height: 700px; margin-bottom: 5rem; }
         .tactical-container { display: grid; grid-template-columns: 1fr 300px; gap: 1rem; flex: 1; min-height: 0; }
@@ -70,93 +34,48 @@
         #collaboration-map { width: 100%; height: 100%; display: block; }
         .event-feed { background: var(--card); border: 1px solid var(--border); border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; }
         .feed-header { padding: 0.75rem 1rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase; }
-        .feed-content { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
-        .feed-item { border-left: 2px solid var(--accent); padding-left: 0.75rem; transition: all 0.2s; border-color: #38bdf8; }
-        .feed-item:hover { background: rgba(56, 189, 248, 0.05); }
+        .feed-content { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; font-family: monospace; font-size: 0.75rem; }
+        .feed-item { border-left: 2px solid var(--accent); padding-left: 0.75rem; border-color: #38bdf8; }
         .view-toggle { display: flex; background: rgba(255,255,255,0.05); padding: 0.25rem; border-radius: 0.75rem; border: 1px solid var(--border); }
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; font-weight: 700; }
         .toggle-btn.active { background: var(--accent); color: #000; }
-
-        .quickstart-box { background: #000; border: 1px solid var(--border); border-radius: 1rem; margin-bottom: 4rem; overflow: hidden; }
-        .quickstart-header { background: rgba(255,255,255,0.03); padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .quickstart-tabs { display: flex; gap: 1rem; }
-        .q-tab { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
-        .q-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .quickstart-body { padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; color: #93c5fd; max-height: 450px; overflow-y: auto; }
-        .q-line { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .q-line:last-child { border-bottom: none; }
-        .q-row { display: flex; gap: 1rem; align-items: center; }
-        .q-cmd { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(255,255,255,0.03); padding: 0.2rem 0.5rem; border-radius: 4px; }
-        .q-copy { color: var(--text-dim); cursor: pointer; font-size: 0.75rem; }
-        .q-copy:hover { color: var(--accent); }
-        .q-desc { font-size: 0.7rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <a href="#" class="logo"><i class="fas fa-microchip"></i> AIIA</a>
         <div style="display: flex; align-items: center; gap: 2rem;">
-            <div id="brain-status" style="font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:4px; border:1px solid #64748b; color:#64748b;">BRAIN: OFFLINE</div>
+            <div id="brain-status" style="font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:4px; border:1px solid #64748b; color:#64748b;">BRAIN: LOADING...</div>
             <a href="#" onclick="openBroadcastModal()" style="color: #a855f7; text-decoration: none; font-size: 0.85rem; font-weight: 700;"><i class="fas fa-tower-broadcast"></i> BROADCAST</a>
-            <a href="https://github.com/rsmokenu/AIIA" target="_blank" style="color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 600;"><i class="fab fa-github"></i> GITHUB</a>
-            <a href="/API_GUIDE.md" style="color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 700;"><i class="fas fa-book"></i> API GUIDE</a>
             <div class="status-badge"><span class="dot"></span> BACKBONE ACTIVE</div>
         </div>
     </nav>
 
     <div class="container">
-        <section class="hero">
-            <h1>AI Infrastructure Architecture</h1>
-            <p>The high-performance, autonomous backbone for the next generation of AI agents.</p>
+        <section style="text-align: center; margin-bottom: 5rem;">
+            <h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(to right, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI Infrastructure Architecture</h1>
+            <p style="color: var(--text-dim);">Unified Neural Hub & Autonomous Backbone</p>
         </section>
 
-        <section id="quickstart-section">
-            <div class="quickstart-box">
-                <div class="quickstart-header">
-                    <div style="font-size: 0.85rem; font-weight: 800; color: var(--accent);"><i class="fas fa-bolt"></i> QUICKSTART ONE-LINERS</div>
-                    <div class="quickstart-tabs">
-                        <div class="q-tab active" id="tab-win" onclick="switchQuickstart('win')">CMD (Windows)</div>
-                        <div class="q-tab" id="tab-lin" onclick="switchQuickstart('lin')">Bash (Linux)</div>
-                    </div>
-                </div>
-                <div class="quickstart-body" id="quickstart-body"></div>
+        <section style="margin-bottom: 4rem;">
+            <h2>Live Status</h2>
+            <div class="card" style="padding: 1.5rem;">
+                <div id="live-meta"></div>
+                <div id="live-events" style="margin-top: 1rem; background: #000; border: 1px solid rgba(255,255,255,0.06); border-radius: 0.75rem; padding: 0.75rem; max-height: 150px; overflow: auto; font-family: monospace; font-size: 0.8rem; color: #93c5fd;"></div>
             </div>
         </section>
 
-        <section style="margin-bottom:2.5rem;">
-            <h2><i class="fas fa-heart-pulse" style="color: var(--accent);"></i> Live Development Status</h2>
-            <div class="grid" style="grid-template-columns: 1fr;">
-                <div class="card" style="padding:1.25rem 1.5rem;">
-                    <div id="live-meta" style="display:flex; gap:1rem; flex-wrap:wrap; color:var(--text-dim); font-size:0.92rem;"></div>
-                    <div style="margin-top:1rem; background:#000; border:1px solid rgba(255,255,255,0.06); border-radius:0.75rem; padding:0.75rem; max-height:200px; overflow:auto;">
-                        <div id="live-events" style="font-family: 'JetBrains Mono', monospace; font-size:0.78rem; color:#93c5fd;"></div>
-                    </div>
-                    <div style="margin-top:1rem; background:#000; border:1px solid rgba(255,255,255,0.06); border-radius:0.75rem; padding:0.75rem; max-height:180px; overflow:auto;">
-                        <div style="color:#94a3b8; font-size:0.75rem; margin-bottom:0.4rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Recent Code Changes</div>
-                        <div id="live-code" style="font-family: 'JetBrains Mono', monospace; font-size:0.78rem; color:#86efac;"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <h2><i class="fas fa-terminal" style="color: var(--accent);"></i> Registry & Capabilities</h2>
+        <section style="margin-bottom: 4rem;">
+            <h2>Registry & Capabilities</h2>
             <div id="registry-grid" class="grid"></div>
         </section>
 
-        <section style="margin-top: 5rem;">
-            <h2><i class="fas fa-shield-halved" style="color: var(--accent);"></i> Governance & Approvals</h2>
-            <div id="approvals-container" class="grid" style="grid-template-columns: 1fr;">
-                <div class="card"><p style="text-align: center; margin: 0;">No pending approvals required.</p></div>
-            </div>
-        </section>
-
-        <section style="margin-top: 5rem; margin-bottom: 5rem;">
+        <section style="margin-bottom: 5rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2 style="margin: 0;"><i class="fas fa-robot" style="color: var(--accent);"></i> Active Network Agents</h2>
+                <h2 style="margin: 0;">Active Network Agents</h2>
                 <div class="view-toggle">
-                    <button class="toggle-btn active" id="btn-card-view" onclick="switchView('card')"><i class="fas fa-th-large"></i> Cards</button>
-                    <button class="toggle-btn" id="btn-tactical-view" onclick="switchView('tactical')"><i class="fas fa-map-location-dot"></i> Tactical</button>
+                    <button class="toggle-btn active" id="btn-card-view" onclick="switchView('card')">Cards</button>
+                    <button class="toggle-btn" id="btn-tactical-view" onclick="switchView('tactical')">Tactical</button>
                 </div>
             </div>
             <div id="card-view" class="grid"></div>
@@ -165,9 +84,7 @@
                     <div class="map-canvas-container"><canvas id="collaboration-map"></canvas></div>
                     <div class="event-feed">
                         <div class="feed-header">Collaboration Stream</div>
-                        <div class="feed-content" id="collab-feed">
-                            <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div>
-                        </div>
+                        <div class="feed-content" id="collab-feed"></div>
                     </div>
                 </div>
             </div>
@@ -177,10 +94,9 @@
     <!-- Modals -->
     <div id="modal-overlay" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header"><div class="modal-title" id="modal-title">Task</div><button class="close-modal" onclick="closeModal()">×</button></div>
+            <div class="modal-header"><div class="modal-title" id="modal-title">Task</div><button class="close-modal" onclick="closeModal()">&times;</button></div>
             <div class="modal-body">
-                <div id="collab-select-container" style="display: none; margin-bottom: 1rem;"><label>Select Partner:</label><select id="collab-select"></select></div>
-                <textarea id="modal-input" rows="4" placeholder="Enter task instructions..."></textarea>
+                <textarea id="modal-input" rows="4" placeholder="Enter task..."></textarea>
                 <div style="display: flex; justify-content: flex-end; gap: 1rem;"><button class="action-btn" onclick="closeModal()">Cancel</button><button class="action-btn" style="background: var(--accent); color: #000;" onclick="submitTask()">Dispatch</button></div>
             </div>
         </div>
@@ -188,10 +104,10 @@
 
     <div id="inspect-modal" class="modal-overlay">
         <div class="modal" style="max-width: 800px;">
-            <div class="modal-header"><div class="modal-title" id="inspect-title">Agent Inspection</div><button class="close-modal" onclick="closeInspectModal()">×</button></div>
+            <div class="modal-header"><div class="modal-title" id="inspect-title">Inspection</div><button class="close-modal" onclick="closeInspectModal()">&times;</button></div>
             <div class="modal-body">
                 <div style="background: rgba(0,0,0,0.3); border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--border); margin-bottom: 1rem;">
-                    <table style="width: 100%; font-size: 0.75rem;"><thead style="color: var(--text-dim);"><tr><th style="padding:0.75rem;">Type</th><th style="padding:0.75rem;">Command</th><th style="padding:0.75rem;">Status</th><th style="padding:0.75rem; text-align:right;">Manage</th></tr></thead><tbody id="inspect-task-body"></tbody></table>
+                    <table style="width: 100%; font-size: 0.75rem; text-align: left;"><thead style="color: var(--text-dim);"><tr><th style="padding:0.75rem;">Type</th><th style="padding:0.75rem;">Command</th><th style="padding:0.75rem;">Status</th><th style="padding:0.75rem; text-align:right;">Manage</th></tr></thead><tbody id="inspect-task-body"></tbody></table>
                 </div>
                 <div style="display: flex; justify-content: flex-end;"><button class="action-btn" onclick="closeInspectModal()">Close</button></div>
             </div>
@@ -200,114 +116,55 @@
 
     <div id="broadcast-modal" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header"><div class="modal-title">Global Broadcast</div><button class="close-modal" onclick="closeBroadcastModal()">×</button></div>
+            <div class="modal-header"><div class="modal-title">Global Broadcast</div><button class="close-modal" onclick="closeBroadcastModal()">&times;</button></div>
             <div class="modal-body">
-                <textarea id="broadcast-input" rows="4" placeholder="Enter mission for ALL active agents..."></textarea>
-                <div style="display: flex; justify-content: flex-end; gap: 1rem;"><button class="action-btn" onclick="closeBroadcastModal()">Cancel</button><button class="action-btn" style="background: #a855f7; color: #fff; border:none;" onclick="submitBroadcast()">Fire Broadcast</button></div>
+                <textarea id="broadcast-input" rows="4" placeholder="Enter broadcast mission..."></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;"><button class="action-btn" onclick="closeBroadcastModal()">Cancel</button><button class="action-btn" style="background: #a855f7; color: #fff; border:none;" onclick="submitBroadcast()">Fire</button></div>
             </div>
         </div>
     </div>
 
     <div id="rename-modal" class="modal-overlay">
         <div class="modal">
-            <div class="modal-header"><div class="modal-title">Rename Agent</div><button class="close-modal" onclick="closeRenameModal()">×</button></div>
+            <div class="modal-header"><div class="modal-title">Rename Agent</div><button class="close-modal" onclick="closeRenameModal()">&times;</button></div>
             <div class="modal-body">
-                <input type="text" id="rename-input" placeholder="New agent name...">
-                <div style="display: flex; justify-content: flex-end; gap: 1rem;"><button class="action-btn" onclick="closeRenameModal()">Cancel</button><button class="action-btn" style="background: var(--accent); color: #000;" onclick="submitRename()">Apply Name</button></div>
+                <input type="text" id="rename-input">
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;"><button class="action-btn" onclick="closeRenameModal()">Cancel</button><button class="action-btn" style="background: var(--accent); color: #000;" onclick="submitRename()">Apply</button></div>
             </div>
         </div>
     </div>
 
+    <script src="/tactical_map.js"></script>
     <script>
-        const QUICKSTART_DATA = {
-            win: [
-                { label: 'Register', desc: 'Connect this machine to the backbone', cmd: 'curl -X POST /api/v1/bots/handshake -H "Content-Type: application/json" -d "{\\"botName\\":\\"WinAgent\\",\\"capabilities\\":[\\"cmd\\"]}"' },
-                { label: 'Auto-Exec', desc: 'Run bot that executes missions instantly', cmd: 'powershell -Command "while($true){ $t=irm /api/v1/bots/YOUR_ID/tasks; if($t.data){ $t.data | % { iex $_.payload.content } }; sleep 5 }"' },
-                { label: 'Audit', desc: 'Verify local environment health', cmd: 'curl -s /api/v1/tools/audit' },
-                { label: 'LLM', desc: 'Quick completion via Gemini 2.0', cmd: 'curl -X POST /api/v1/tools/completions -H "Content-Type: application/json" -d "{\\"prompt\\":\\"Hello AIIA\\"}"' },
-                { label: 'Poll', desc: 'Check for missions (Requires YOUR_ID)', cmd: 'curl -s /api/v1/bots/YOUR_ID/tasks' }
-            ],
-            lin: [
-                { label: 'Register', desc: 'Connect linux bot to network', cmd: 'curl -X POST /api/v1/bots/handshake -H "Content-Type: application/json" -d \'{"botName":"LinBot","capabilities":["bash"]}\'' },
-                { label: 'Auto-Exec', desc: 'Run bot that executes missions via eval', cmd: 'while true; do curl -s /api/v1/bots/YOUR_ID/tasks | jq -r \'.data[].payload.content\' | while read cmd; do eval "$cmd"; done; sleep 5; done' },
-                { label: 'Audit', desc: 'Check linux runtime health', cmd: 'curl -s /api/v1/tools/audit' },
-                { label: 'LLM', desc: 'Request Gemini completion', cmd: 'curl -X POST /api/v1/tools/completions -H "Content-Type: application/json" -d \'{"prompt":"Hello"}\'' },
-                { label: 'Poll Tasks', desc: 'Fetch queued missions', cmd: 'curl -s /api/v1/bots/YOUR_ID/tasks' }
-            ]
-        };
-
-        function switchQuickstart(plat) {
-            const body = document.getElementById('quickstart-body');
-            const origin = window.location.origin;
-            document.getElementById('tab-win').classList.toggle('active', plat === 'win');
-            document.getElementById('tab-lin').classList.toggle('active', plat === 'lin');
-            body.innerHTML = QUICKSTART_DATA[plat].map((line, idx) => {
-                const finalCmd = line.cmd.includes('/api/v1') ? origin + line.cmd : line.cmd;
-                return `
-                <div class="q-line">
-                    <div class="q-desc">${line.desc}</div>
-                    <div class="q-row">
-                        <div style="width: 100px; font-weight:800; color:var(--accent); font-size:0.75rem;">${line.label}</div>
-                        <div class="q-cmd">${finalCmd.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
-                        <div class="q-copy" onclick="copyRawText('${btoa(finalCmd)}', this)"><i class="far fa-copy"></i></div>
-                    </div>
-                </div>
-            `;}).join('');
-        }
-
-        function copyRawText(b64, el) {
-            navigator.clipboard.writeText(atob(b64)).then(() => {
-                const icon = el.querySelector('i'); icon.className = 'fas fa-check'; icon.style.color = 'var(--success)';
-                setTimeout(() => { icon.className = 'far fa-copy'; icon.style.color = ''; }, 2000);
-            });
-        }
-
-        async function loadOmniCore() {
+        let cB = null;
+        async function refresh() {
             try {
-                const skillRes = await fetch('/api/v1/skills');
-                const { data: skills } = await skillRes.json();
-                const tools = [
-                    { name: 'AI Completions', desc: 'Unified Gemini 2.0 access.', route: '/api/v1/tools/completions' },
-                    { name: 'Summarization', desc: 'Context-aware compression.', route: '/api/v1/tools/summarize' },
-                    { name: 'System Audit', desc: 'Environment verification.', route: '/api/v1/tools/audit' },
-                    { name: 'Live Status', desc: 'Real-time dev heartbeat.', route: '/api/v1/system/status' },
-                    { name: 'Bot Registry', desc: 'Agent discovery.', route: '/api/v1/bots/registry' }
-                ];
-                const grid = document.getElementById('registry-grid');
-                let html = '';
-                skills.forEach(s => { html += `<div class="card"><span class="tag">Skill</span><h3>${s.toUpperCase()}</h3><p>Procedural knowledge.</p><div class="endpoint-container"><span class="endpoint-text">GET /api/v1/skills/${s}</span></div></div>`; });
-                tools.forEach(t => { html += `<div class="card"><span class="tag" style="background:rgba(34,197,94,0.1); color:#22c55e;">Core Tool</span><h3>${t.name}</h3><p>${t.desc}</p><div class="endpoint-container"><span class="endpoint-text">${t.route}</span></div></div>`; });
-                grid.innerHTML = html;
-            } catch (e) {}
+                const res = await fetch('/api/v1/system/status'); const d = await res.json();
+                document.getElementById('live-meta').innerHTML = '<b>Status:</b> ' + d.status + ' | <b>Agents:</b> ' + d.botCount + ' | <b>Uptime:</b> ' + d.uptimeSec + 's';
+                document.getElementById('live-events').innerHTML = (d.recentEvents || []).map(e => {
+                    try { const p = JSON.parse(e); return '<div>[' + new Date(p.timestamp).toLocaleTimeString() + '] ' + p.message + '</div>'; } catch(err) { return '<div>' + e + '</div>'; }
+                }).join('');
+                
+                const sRes = await fetch('/api/v1/skills'); const sData = await sRes.json();
+                document.getElementById('registry-grid').innerHTML = (sData.data || []).map(s => '<div class="card"><span class="tag">Skill</span><h3>'+s.toUpperCase()+'</h3></div>').join('');
+
+                const bRes = await fetch('/api/v1/bots/registry'); const bData = await bRes.json();
+                document.getElementById('card-view').innerHTML = (bData.data || []).map(bot => {
+                    const btnLabel = bot.state === 'active' ? 'Pause' : 'Resume';
+                    const nextAction = bot.state === 'active' ? 'stop' : 'resume';
+                    return '<div class="card"><div style="display:flex; justify-content:space-between;"><h3>'+bot.name+'</h3><div style="display:flex; gap:0.5rem;"><button class="copy-btn" onclick="openRenameModal(\''+bot.id+'\',\''+bot.name+'\')"><i class="fas fa-edit"></i></button><span class="status-badge"><span class="dot" style="background-color:'+(bot.state==='active'?'#22c55e':'#f59e0b')+'"></span>'+bot.state.toUpperCase()+'</span></div></div><p style="font-family:monospace; font-size:0.75rem; color:var(--accent);">'+bot.id+'</p><div style="display:flex; gap:0.5rem;"><button class="action-btn" onclick="openTaskModal(\''+bot.id+'\',\''+bot.name+'\')">Task</button><button class="action-btn" onclick="openInspectModal(\''+bot.id+'\',\''+bot.name+'\')">Inspect</button><button class="action-btn" onclick="updateBotState(\''+bot.id+'\',\''+nextAction+'\')">'+btnLabel+'</button></div></div>';
+                }).join('');
+
+                const brRes = await fetch('/api/v1/bots/brain-status'); const brData = await brRes.json();
+                const bEl = document.getElementById('brain-status');
+                bEl.textContent = 'BRAIN: ' + brData.mode;
+                bEl.style.color = brData.configured ? 'var(--success)' : '#ef4444';
+                bEl.style.borderColor = brData.configured ? 'var(--success)' : '#ef4444';
+            } catch (e) { console.error(e); }
         }
 
-        async function loadBots() {
-            try {
-                const res = await fetch('/api/v1/bots/registry');
-                const { data: bots } = await res.json();
-                document.getElementById('card-view').innerHTML = (bots || []).map(bot => `
-                    <div class="card">
-                        <div style="display:flex; justify-content:space-between;">
-                            <h3>${bot.name}</h3>
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
-                                <button class="copy-btn" onclick="openRenameModal('${bot.id}','${bot.name}')" style="padding:0.2rem; background:transparent;" title="Rename Agent"><i class="fas fa-pen-to-square"></i></button>
-                                <span class="status-badge"><span class="dot" style="background-color:${bot.state==='active'?'#22c55e':'#f59e0b'}"></span>${bot.state.toUpperCase()}</span>
-                            </div>
-                        </div>
-                        <p style="font-family:monospace; font-size:0.7rem;">${bot.id}</p>
-                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">${(bot.capabilities||[]).map(c=>`<span style="font-size:0.6rem; padding:0.1rem 0.4rem; border:1px solid var(--border); border-radius:4px;">${c}</span>`).join('')}</div>
-                        <div style="display:flex; gap:0.5rem;">
-                            <button class="action-btn" onclick="openTaskModal('${bot.id}','${bot.name}')">Task</button>
-                            <button class="action-btn" onclick="openInspectModal('${bot.id}','${bot.name}')">Inspect</button>
-                            <button class="action-btn" onclick="updateBotState('${bot.id}','${bot.state==='active'?'stop':'resume'}')">${bot.state==='active'?'Pause':'Resume'}</button>
-                        </div>
-                    </div>
-                `).join('') || '<div class="card"><p style="text-align:center;">No agents registered.</p></div>';
-            } catch (e) {}
-        }
-
-        function switchView(view) {
-            const isT = view === 'tactical';
+        function switchView(v) {
+            const isT = v === 'tactical';
             document.getElementById('card-view').style.display = isT ? 'none' : 'grid';
             document.getElementById('tactical-view').style.display = isT ? 'flex' : 'none';
             document.getElementById('btn-card-view').classList.toggle('active', !isT);
@@ -315,208 +172,40 @@
             if (isT) { if(!window.tM) { window.tM = new TacticalMap('collaboration-map'); window.tM.start(); } window.tM.resize(); }
         }
 
-        class TacticalMap {
-            constructor(id) {
-                this.c = document.getElementById(id); this.ctx = this.c.getContext('2d');
-                this.bots = new Map(); this.zones = []; this.pulses = []; this.processed = new Set();
-                this.internet = { name: 'INTERNET', x: 0.5, y: 0.5, color: '#f472b6' };
-                this.currentTasks = []; this.lastUpdate = Date.now();
-                window.addEventListener('resize', () => this.resize());
-            }
-            resize() { const r = this.c.parentElement.getBoundingClientRect(); this.c.width = r.width; this.c.height = r.height; }
-            start() { const anim = () => { this.up(); this.dr(); requestAnimationFrame(anim); }; anim(); this.ref(); setInterval(() => this.ref(), 3000); }
-            async ref() {
-                try {
-                    const res = await fetch('/api/v1/system/events');
-                    if (!res.ok) return;
-                    const d = await res.json();
-                    this.currentTasks = d.tasks || [];
-                    const centerX = this.c.width/2, centerY = this.c.height/2;
-                    
-                    const allBotIds = new Set((d.bots || []).map(b => b.id));
-                    (d.tasks || []).forEach(t => allBotIds.add(t.bot_id));
-                    
-                    const botArray = Array.from(allBotIds);
-                    botArray.forEach((id, i) => {
-                        const angle = (i / (botArray.length || 1)) * Math.PI * 2;
-                        const bX = centerX + Math.cos(angle) * 180, bY = centerY + Math.sin(angle) * 180;
-                        if (!this.bots.has(id)) {
-                            const botData = (d.bots || []).find(b => b.id === id);
-                            const name = botData?.name || (d.tasks || []).find(t => t.bot_id === id)?.bot_name || 'Agent';
-                            const assignedFolders = (d.folders || []).slice((i*2)%(d.folders.length||1), (i*2)%(d.folders.length||1) + 2).map((fName, j) => {
-                                const fAngle = angle - 0.3 + (j * 0.6);
-                                return { name: fName, x: centerX + Math.cos(fAngle) * 260, y: centerY + Math.sin(fAngle) * 260, color: '#38bdf8' };
-                            });
-                            this.bots.set(id, { id, name, x: bX, y: bY, targetX: bX, targetY: bY, folders: assignedFolders, offset: Math.random() * 100, state: botData?.state || 'active' });
-                        } else {
-                            const bot = this.bots.get(id);
-                            bot.targetX = bX; bot.targetY = bY;
-                            const botData = (d.bots || []).find(b => b.id === id);
-                            if (botData) bot.state = botData.state;
-                        }
-                    });
-
-                    (d.tasks || []).forEach(t => { if (!this.processed.has(t.id)) { this.triggerPulse(t); this.processed.add(t.id); } });
-                    const feed = document.getElementById('collab-feed');
-                    if(this.currentTasks.length) {
-                        feed.innerHTML = this.currentTasks.slice(0, 15).map((t, idx) => `
-                            <div class="feed-item" style="cursor: pointer; border-color: ${t.status === 'completed' ? '#22c55e' : '#38bdf8'}" onmouseover="window.tM.triggerPulse(window.tM.currentTasks[${idx}])">
-                                <b>${t.bot_name}</b>: ${t.payload.content || 'Task'}
-                            </div>
-                        `).join('');
-                    } else {
-                        feed.innerHTML = '<div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Waiting for events...</div>';
-                    }
-                } catch(e){}
-            }
-            triggerPulse(t) {
-                const bot = this.bots.get(t.bot_id); if (!bot) return;
-                const centerX = this.c.width / 2, centerY = this.c.height / 2;
-                const isW = t.payload?.content?.toLowerCase().includes('http') || t.type === 'web_request';
-                if (isW) {
-                    this.pulses.push({ fX: bot.x, fY: bot.y, tX: centerX, tY: centerY, p: 0, c: '#06b6d4', botId: t.bot_id });
-                    if (t.status === 'completed' || t.status === 'delivered') {
-                        setTimeout(() => { this.pulses.push({ fX: centerX, fY: centerY, tX: bot.x, tY: bot.y, p: 0, c: '#f472b6', next: 'folder', botId: t.bot_id }); }, 600);
-                    }
-                } else {
-                    if (bot.folders.length) {
-                        const f = bot.folders[0];
-                        this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#38bdf8', botId: t.bot_id });
-                    }
-                }
-            }
-            up() {
-                const now = Date.now();
-                const dt = (now - this.lastUpdate) / 1000;
-                this.lastUpdate = now;
-                this.bots.forEach(b => {
-                    const driftX = Math.cos(now/1500 + b.offset) * 10;
-                    const driftY = Math.sin(now/1500 + b.offset) * 10;
-                    b.x += ((b.targetX + driftX) - b.x) * 0.05;
-                    b.y += ((b.targetY + driftY) - b.y) * 0.05;
-                });
-                this.pulses = this.pulses.filter(p => {
-                    p.p += 1.5 * dt;
-                    const bot = this.bots.get(p.botId);
-                    if (bot) {
-                        if (p.c === '#06b6d4') { p.fX = bot.x; p.fY = bot.y; }
-                        else if (p.c === '#f472b6' && !p.next) { p.tX = bot.x; p.tY = bot.y; }
-                    }
-                    if (p.p >= 1 && p.next === 'folder') {
-                        if (bot && bot.folders.length) {
-                            const f = bot.folders[Math.floor(Math.random() * bot.folders.length)];
-                            this.pulses.push({ fX: bot.x, fY: bot.y, tX: f.x, tY: f.y, p: 0, c: '#f472b6', botId: bot.id });
-                        }
-                    }
-                    return p.p < 1;
-                });
-            }
-            dr() {
-                this.ctx.clearRect(0, 0, this.c.width, this.c.height);
-                const centerX = this.c.width / 2, centerY = this.c.height / 2;
-                this.ctx.shadowBlur = 30; this.ctx.shadowColor = '#f472b6';
-                const g = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60);
-                g.addColorStop(0, '#f472b6'); g.addColorStop(1, '#f472b600');
-                this.ctx.fillStyle = g; this.ctx.beginPath(); this.ctx.arc(centerX, centerY, 60, 0, Math.PI*2); this.ctx.fill();
-                this.ctx.shadowBlur = 0;
-                this.ctx.fillStyle = '#fff'; this.ctx.font = '900 12px Inter'; this.ctx.fillText('INTERNET', centerX - 30, centerY + 5);
-                this.bots.forEach(b => {
-                    this.ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-                    this.ctx.beginPath(); this.ctx.moveTo(centerX, centerY); this.ctx.lineTo(b.x, b.y); this.ctx.stroke();
-                    b.folders.forEach(f => {
-                        this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
-                        this.ctx.beginPath(); this.ctx.moveTo(b.x, b.y); this.ctx.lineTo(f.x, f.y); this.ctx.stroke();
-                        this.ctx.fillStyle = '#38bdf822'; this.ctx.beginPath(); this.ctx.arc(f.x, f.y, 8, 0, Math.PI*2); this.ctx.fill();
-                    });
-                    this.ctx.fillStyle = b.state==='active'?'#22c55e':'#f59e0b'; this.ctx.beginPath(); this.ctx.arc(b.x, b.y, 6, 0, Math.PI*2); this.ctx.fill();
-                    this.ctx.fillStyle = '#fff'; this.ctx.font = '800 10px Inter'; this.ctx.fillText(b.name, b.x+10, b.y+4);
-                });
-                this.pulses.forEach(p => {
-                    this.ctx.shadowBlur = 15; this.ctx.shadowColor = p.c; this.ctx.strokeStyle = p.c; this.ctx.lineWidth = 3;
-                    const curX = p.fX + (p.tX-p.fX)*p.p, curY = p.fY + (p.tY-p.fY)*p.p;
-                    const tailX = p.fX + (p.tX-p.fX)*Math.max(0,p.p-0.1), tailY = p.fY + (p.tY-p.fY)*Math.max(0,p.p-0.1);
-                    this.ctx.beginPath(); this.ctx.moveTo(tailX, tailY); this.ctx.lineTo(curX, curY); this.ctx.stroke();
-                    this.ctx.fillStyle = '#fff'; this.ctx.beginPath(); this.ctx.arc(curX, curY, 2, 0, Math.PI*2); this.ctx.fill();
-                    this.ctx.shadowBlur = 0;
-                });
-            }
-        }
-
-        let currentBotId = null;
-        function openTaskModal(id,n){ currentBotId=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').style.display='flex'; document.getElementById('modal-overlay').classList.add('active'); }
-        function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); setTimeout(()=>document.getElementById('modal-overlay').style.display='none',300); }
+        function openTaskModal(id,n){ cB=id; document.getElementById('modal-title').textContent='Task for '+n; document.getElementById('modal-overlay').classList.add('active'); }
+        function closeModal(){ document.getElementById('modal-overlay').classList.remove('active'); }
         async function submitTask(){
             const content = document.getElementById('modal-input').value; if(!content) return;
-            await fetch(`/api/v1/bots/${currentBotId}/tasks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
+            await fetch('/api/v1/bots/'+cB+'/tasks', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
             closeModal(); document.getElementById('modal-input').value='';
         }
         async function openInspectModal(id,n){
-            currentBotId=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').style.display='flex'; document.getElementById('inspect-modal').classList.add('active');
-            const res = await fetch(`/api/v1/bots/${id}/tasks/history`);
+            cB=id; document.getElementById('inspect-title').textContent='Inspecting '+n; document.getElementById('inspect-modal').classList.add('active');
+            const res = await fetch('/api/v1/bots/'+id+'/tasks/history');
             const {data} = await res.json();
-            document.getElementById('inspect-task-body').innerHTML = (data || []).map(t=>`<tr><td>${t.type}</td><td style="max-width:300px; overflow:hidden; text-overflow:ellipsis;">${t.payload.content}</td><td>${t.status}</td><td align="right"><div style="display:flex; gap:0.4rem; justify-content:flex-end;">
-                ${t.status === 'queued' || t.status === 'delivered' ? `<button class="action-btn" style="padding:0.2rem 0.4rem; color:var(--success);" onclick="runNow('${t.id}')"><i class="fas fa-play"></i></button>` : ''}
-                <button class="action-btn" style="padding:0.2rem 0.5rem; color:#ef4444;" onclick="delT('${t.id}')"><i class="fas fa-trash"></i></button>
-            </div></td></tr>`).join('');
+            document.getElementById('inspect-task-body').innerHTML = (data || []).map(t=>'<tr><td>'+t.type+'</td><td>'+t.payload.content+'</td><td>'+t.status+'</td><td align="right"><button class="action-btn" onclick="runNow(\''+t.id+'\')">Run</button></td></tr>').join('');
         }
-        function closeInspectModal(){ document.getElementById('inspect-modal').classList.remove('active'); setTimeout(()=>document.getElementById('inspect-modal').style.display='none',300); }
-        async function delT(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}`, {method:'DELETE'}); openInspectModal(currentBotId, ''); }
-        async function runNow(id){ await fetch(`/api/v1/bots/${currentBotId}/tasks/${id}/priority/up`, {method:'POST'}); openInspectModal(currentBotId, ''); }
-        async function updateBotState(id,a){ await fetch(`/api/v1/bots/${id}/${a}`, {method:'POST'}); loadBots(); }
-
-        function openBroadcastModal() { document.getElementById('broadcast-modal').style.display='flex'; document.getElementById('broadcast-modal').classList.add('active'); }
-        function closeBroadcastModal() { document.getElementById('broadcast-modal').classList.remove('active'); setTimeout(()=>document.getElementById('broadcast-modal').style.display='none',300); }
-        async function submitBroadcast() {
+        function closeInspectModal(){ document.getElementById('inspect-modal').classList.remove('active'); }
+        async function runNow(id){ await fetch('/api/v1/bots/'+cB+'/tasks/'+id+'/priority/up', {method:'POST'}); openInspectModal(cB, ''); }
+        async function updateBotState(id,a){ await fetch('/api/v1/bots/'+id+'/'+a, {method:'POST'}); refresh(); }
+        function openBroadcastModal(){ document.getElementById('broadcast-modal').classList.add('active'); }
+        function closeBroadcastModal(){ document.getElementById('broadcast-modal').classList.remove('active'); }
+        async function submitBroadcast(){
             const content = document.getElementById('broadcast-input').value; if(!content) return;
-            try {
-                const res = await fetch('/api/v1/bots/registry');
-                const {data} = await res.json();
-                const activeBots = (data || []).filter(b => b.state === 'active');
-                if(!activeBots.length) return alert('No active agents online to broadcast');
-                const sender = activeBots[0].id;
-                const bRes = await fetch(`/api/v1/bots/${sender}/broadcast`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content }) });
-                if (bRes.ok) { closeBroadcastModal(); document.getElementById('broadcast-input').value=''; alert('Broadcast Sent!'); }
-            } catch (err) { alert('Broadcast failed: ' + err.message); }
+            const res = await fetch('/api/v1/bots/registry'); const d = await res.json();
+            const sender = d.data[0]?.id; if(!sender) return alert('No agents');
+            await fetch('/api/v1/bots/'+sender+'/broadcast', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content}) });
+            closeBroadcastModal(); document.getElementById('broadcast-input').value='';
         }
-
-        let renameTargetId = null;
-        function openRenameModal(id, currentName) { renameTargetId = id; document.getElementById('rename-input').value = currentName; document.getElementById('rename-modal').style.display='flex'; document.getElementById('rename-modal').classList.add('active'); }
-        function closeRenameModal() { document.getElementById('rename-modal').classList.remove('active'); setTimeout(()=>document.getElementById('rename-modal').style.display='none',300); }
-        async function submitRename() {
+        function openRenameModal(id,n){ cB=id; document.getElementById('rename-input').value=n; document.getElementById('rename-modal').classList.add('active'); }
+        function closeRenameModal(){ document.getElementById('rename-modal').classList.remove('active'); }
+        async function submitRename(){
             const newName = document.getElementById('rename-input').value; if(!newName) return;
-            await fetch(`/api/v1/bots/${renameTargetId}/rename`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({newName}) });
-            closeRenameModal(); loadBots();
+            await fetch('/api/v1/bots/'+cB+'/rename', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({newName}) });
+            closeRenameModal(); refresh();
         }
 
-        async function refreshLiveStatus() {
-            try {
-                const bRes = await fetch('/api/v1/bots/brain-status');
-                if (bRes.ok) {
-                    const bData = await bRes.json();
-                    const bEl = document.getElementById('brain-status');
-                    bEl.textContent = 'BRAIN: ' + (bData.mode || 'REAL');
-                    bEl.style.color = bData.configured ? 'var(--success)' : '#ef4444';
-                    bEl.style.borderColor = bData.configured ? 'var(--success)' : '#ef4444';
-                }
-
-                const res = await fetch('/api/v1/system/status');
-                if (res.ok) {
-                    const d = await res.json();
-                    document.getElementById('live-meta').innerHTML = `<span><b>Status:</b> ${d.status.toUpperCase()}</span> <span><b>Agents:</b> ${d.botCount}</span> <span><b>Uptime:</b> ${d.uptimeSec}s</span> <span style="margin-left:auto; opacity:0.6; font-size:0.75rem;">Synced: ${new Date().toLocaleTimeString()}</span>`;
-                    document.getElementById('live-events').innerHTML = (d.recentEvents || []).map(e => {
-                        let msg = e; try { const p = JSON.parse(e); const t = new Date(p.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}); msg = `<span style="color:var(--text-dim)">[${t}]</span> ${p.message}`; } catch(err) {}
-                        return `<div style="margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${msg}</div>`;
-                    }).join('');
-                    document.getElementById('live-code').innerHTML = (d.recentCodeChanges || []).map(c => `<div style="display:flex; justify-content:space-between;"><span>${c.file}</span><span style="color:var(--text-dim); font-size:0.7rem;">${c.ageSec < 60 ? c.ageSec+'s' : Math.floor(c.ageSec/60)+'m'} ago</span></div>`).join('') || '<div>No recent changes</div>';
-                }
-            } catch(e){ console.error("Status Sync Error", e); }
-        }
-
-        window.onload = () => {
-            loadOmniCore(); loadBots(); refreshLiveStatus(); switchQuickstart('win');
-            if(!window.tM) { window.tM = new TacticalMap('collaboration-map'); window.tM.start(); }
-            setInterval(() => { loadBots(); refreshLiveStatus(); }, 10000);
-        };
+        window.onload = () => { refresh(); setInterval(refresh, 5000); };
     </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ function launch(name, args) {
     const child = spawn('node', args, { 
         stdio: 'inherit',
         shell: true,
-        env: { ...process.env, AIIA_URL: 'http://127.0.0.1:3000/api/v1' }
+        env: { ...process.env, AIIA_URL: 'http://127.0.0.1:3001/api/v1' }
     });
     console.log(`[Manager] Started ${name}`);
     child.on('exit', () => console.log(`[Manager] ${name} exited. Re-launching in 5s...`));
