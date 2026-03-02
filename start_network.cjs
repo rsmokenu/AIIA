@@ -1,23 +1,26 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-function launch(name, args) {
-    const child = spawn('node', args, { 
-        stdio: 'inherit',
-        shell: true,
-        env: { ...process.env, AIIA_URL: 'http://127.0.0.1:3001/api/v1' }
-    });
-    console.log(`[Manager] Started ${name}`);
-    child.on('exit', () => console.log(`[Manager] ${name} exited. Re-launching in 5s...`));
-}
+const services = [
+  { name: 'Backbone', command: 'node', args: ['src/server.js'] },
+  { name: 'CritiqueMonitor', command: 'node', args: ['critique_monitor.cjs'] },
+  { name: 'NetworkObserver', command: 'node', args: ['mission_agent.cjs', 'NetworkObserver', 'network_audit,security_scan'] },
+  { name: 'DataCollector', command: 'node', args: ['mission_agent.cjs', 'DataCollector', 'web_scraping,json_parsing'] },
+  { name: 'StyleArchitect', command: 'node', args: ['mission_agent.cjs', 'StyleArchitect', 'ui_design,css_optimization'] },
+  { name: 'CompetitiveSync', command: 'node', args: ['competitive_sync.cjs'] }
+];
 
-// 1. Start Server
-const server = spawn('node', ['src/server.js'], { stdio: 'inherit', shell: true });
-console.log('[Manager] Backbone Initiated.');
+services.forEach(service => {
+  console.log(`Starting ${service.name}...`);
+  const child = spawn(service.command, service.args, {
+    stdio: 'inherit',
+    shell: true,
+    cwd: __dirname
+  });
 
-// 2. Wait and start Agents
-setTimeout(() => {
-    launch('DataCollector', ['mission_agent.cjs', 'DataCollector', 'cmd,web_request']);
-    launch('StyleArchitect', ['mission_agent.cjs', 'StyleArchitect', 'cmd,file_system']);
-    launch('NetworkObserver', ['mission_agent.cjs', 'NetworkObserver', 'cmd,logging']);
-}, 5000);
+  child.on('exit', (code) => {
+    console.log(`${service.name} exited with code ${code}`);
+  });
+});
+
+console.log('AIIA OMNICORE 3.1: REAL-TIME NEURAL CLOUD ACTIVE');

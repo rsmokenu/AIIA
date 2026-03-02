@@ -1,60 +1,72 @@
 require('dotenv').config();
+const http = require('http');
+const WebSocket = require('ws');
 const app = require('./app');
 const logger = require('./utils/logger');
 const { initDB, closeDB } = require('./config/database');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
+
+// 1. Create Server
+const server = http.createServer(app);
+
+// 2. Initialize WebSocket Server
+const wss = new WebSocket.Server({ server });
+const clients = new Map(); // botId -> socket
+
+wss.on('connection', (ws) => {
+    let currentBotId = null;
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+            if (data.type === 'auth') {
+                currentBotId = data.botId;
+                clients.set(currentBotId, ws);
+                logger.info(`Agent Socket Connected: ${currentBotId}`);
+                ws.send(JSON.stringify({ type: 'welcome', message: 'AIIA REALTIME_BUS ACTIVE' }));
+            }
+        } catch (e) {}
+    });
+
+    ws.on('close', () => {
+        if (currentBotId) {
+            clients.delete(currentBotId);
+            logger.info(`Agent Socket Disconnected: ${currentBotId}`);
+        }
+    });
+});
+
+// 3. Expose Real-time Dispatch Utility
+global.aiiaBus = {
+    sendToBot: (botId, task) => {
+        const client = clients.get(botId);
+        if (client && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'new_task', task }));
+            return true;
+        }
+        return false;
+    }
+};
 
 (async () => {
   try {
     await initDB();
-    const server = app.listen(PORT, () => {
-      logger.info(`AIIA Backbone running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    server.listen(PORT, () => {
+      logger.info(`AIIA Backbone running on port ${PORT} [REALTIME ENABLED]`);
     });
 
-    let isShuttingDown = false;
-
     const gracefulShutdown = async (signal) => {
-      if (isShuttingDown) return;
-      isShuttingDown = true;
-
       logger.info(`Received ${signal}. Starting graceful shutdown...`);
-
-      server.close(async (closeErr) => {
-        if (closeErr) {
-          logger.error(`HTTP server close error: ${closeErr.message}`);
-        }
-
-        try {
-          await closeDB();
-          process.exit(closeErr ? 1 : 0);
-        } catch (dbErr) {
-          logger.error(`Database close error: ${dbErr.message}`);
-          process.exit(1);
-        }
+      server.close(async () => {
+        try { await closeDB(); process.exit(0); } catch (e) { process.exit(1); }
       });
-
-      // Safety timeout so process doesn't hang forever.
-      setTimeout(() => {
-        logger.error('Forced shutdown after graceful timeout.');
-        process.exit(1);
-      }, 10_000).unref();
     };
 
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-
-    process.on('unhandledRejection', async (err) => {
-      logger.error(`Unhandled Rejection: ${err?.stack || err?.message || err}`);
-      await gracefulShutdown('unhandledRejection');
-    });
-
-    process.on('uncaughtException', async (err) => {
-      logger.error(`Uncaught Exception: ${err?.stack || err?.message || err}`);
-      await gracefulShutdown('uncaughtException');
-    });
   } catch (err) {
-    logger.error(`Failed to initialize database: ${err.message}`);
+    logger.error(`Failed to initialize: ${err.message}`);
     process.exit(1);
   }
 })();

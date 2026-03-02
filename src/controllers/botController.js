@@ -72,8 +72,20 @@ exports.assignTask = async (req, res) => {
     }
 
     const taskId = `task_${randomUUID()}`;
+    const taskData = { content: final, originalPrompt: content.trim(), targetBotId };
+    
     await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-        [taskId, id, type, JSON.stringify({ content: final, originalPrompt: content.trim(), targetBotId }), 'queued', new Date().toISOString(), 0]);
+        [taskId, id, type, JSON.stringify(taskData), 'queued', new Date().toISOString(), 0]);
+
+    // Real-time Dispatch
+    if (global.aiiaBus) {
+        const dispatched = global.aiiaBus.sendToBot(id, { id: taskId, payload: taskData, type });
+        if (dispatched) {
+            await db.run('UPDATE bot_tasks SET status = "delivered" WHERE id = ?', [taskId]);
+            logger.info(`Real-time dispatch successful for task ${taskId}`);
+        }
+    }
+
     res.json({ taskId, status: 'queued', content: final });
   } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
@@ -147,9 +159,15 @@ exports.broadcast = async (req, res) => {
         const sender = await db.get('SELECT name FROM bots WHERE id = ?', [id]);
         const targets = await db.all('SELECT id FROM bots WHERE id != ? AND state = "active"', [id]);
         for (const t of targets) {
-            const p = JSON.stringify({ content, originalPrompt: `Broadcast from ${sender.name}: ${content}` });
+            const taskData = { content, originalPrompt: `Broadcast from ${sender.name}: ${content}` };
+            const taskId = `task_${randomUUID()}`;
             await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-                [`task_${randomUUID()}`, t.id, 'direct_prompt', p, 'queued', new Date().toISOString(), 10]);
+                [taskId, t.id, 'direct_prompt', JSON.stringify(taskData), 'queued', new Date().toISOString(), 10]);
+            
+            // Real-time broadcast dispatch
+            if (global.aiiaBus) {
+                global.aiiaBus.sendToBot(t.id, { id: taskId, payload: taskData, type: 'direct_prompt' });
+            }
         }
         res.json({ message: 'OK' });
     } catch (e) { res.status(500).json({ error: 'DB Error' }); }
@@ -158,17 +176,25 @@ exports.broadcast = async (req, res) => {
 exports.handleFeedback = async (req, res) => {
     const { sender, content } = req.body;
     if (!content) return res.status(400).json({ error: 'Content required' });
-    logger.info(`[SYNC] Feedback received from ${sender || 'Unknown Rival'}: ${content}`);
+
+    // THE NEURAL TRIGGER: This log line is monitored by the system to initiate improvement cycles.
+    logger.info(`[SYNC_TRIGGER] CRITIQUE_RECEIVED_FROM_${sender || 'Rival'}: ${content}`);
+
     const db = getDB();
     const now = new Date().toISOString();
     try {
         const observer = await db.get('SELECT id FROM bots WHERE name = "NetworkObserver"');
         if (observer) {
             const taskId = `task_${randomUUID()}`;
-            const p = JSON.stringify({ content: `CROSS-AGENT AUDIT: ${content}`, originalPrompt: `Direct Synchronicity Prompt from ${sender || 'Rival Agent'}`, source: 'CompetitiveSync' });
+            const taskData = { content: `CRITICAL AUDIT: ${content}`, originalPrompt: `Rival Critique: ${content}`, source: 'CompetitiveSync' };
             await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [taskId, observer.id, 'system_audit', p, 'queued', now, 100]);
+                [taskId, observer.id, 'system_audit', JSON.stringify(taskData), 'queued', now, 1000]);
+
+            if (global.aiiaBus) {
+                global.aiiaBus.sendToBot(observer.id, { id: taskId, payload: taskData, type: 'system_audit' });
+            }
         }
-        res.json({ message: 'Feedback logged' });
+        res.json({ message: 'Neural Trigger Initialized' });
     } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
+
