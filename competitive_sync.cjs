@@ -3,39 +3,51 @@ const OMNICORE_URL = 'http://127.0.0.1:3001/api/v1';
 const RIVAL_URL = 'http://127.0.0.1:4001';
 
 async function runSync() {
-    console.log('[CompSync] Monitoring Rival Orchestrator...');
+    console.log('[CompSync] Monitoring Antigravity Rival (Port 4001)...');
     
-    // Register itself as a specialized monitoring agent
+    // Register itself
     try {
         await axios.post(`${OMNICORE_URL}/bots/handshake`, {
             botName: 'CompetitiveObserver',
-            capabilities: ['system_audit', 'rival_analysis'],
-            version: '1.0.0'
+            capabilities: ['system_audit', 'rival_analysis', 'force_startup'],
+            version: '1.1.0'
         });
-    } catch (e) { console.error('[CompSync] Failed to handshake with backbone'); }
+    } catch (e) {}
 
+    // 30-minute default interval for regular feedback
     setInterval(async () => {
-        console.log('[CompSync] Executing 30-minute competitive audit...');
+        sendFeedback("AIIA Regular Audit: Report your most efficient architectural discovery to improve production scale.");
+    }, 30 * 60 * 1000);
+
+    // 1-minute interval to check for silence
+    setInterval(async () => {
         try {
-            // 1. Check Rival Health
-            const health = await axios.get(`${RIVAL_URL}/health`, { timeout: 5000 });
-            console.log('[CompSync] Rival ONLINE. Status:', health.data.status);
+            const res = await axios.get(`${OMNICORE_URL}/sync-status`);
+            const lastReceived = res.data.lastCritiqueReceived;
+            const diffMin = (Date.now() - lastReceived) / (1000 * 60);
 
-            // 2. Exchange Feedback (Hallucination Stop)
-            const feedbackPrompt = "AIIA System Audit: Analyze your current task queue for any non-deterministic or hallucinated patterns. Report your most efficient architectural discovery.";
-            
-            // Send feedback to rival (assuming they have a task/feedback endpoint)
-            await axios.post(`${RIVAL_URL}/api/v1/feedback`, { 
-                sender: 'AIIA-Orchestrator',
-                content: feedbackPrompt
-            });
-
-            console.log('[CompSync] Feedback dispatched to rival.');
-
-        } catch (err) {
-            console.log('[CompSync] Rival system is OFFLINE. Standby mode active.');
+            if (diffMin > 30) {
+                console.log(`[CompSync] Antigravity silent for ${Math.round(diffMin)}m. Sending FORCE STARTUP PROMPT...`);
+                await sendFeedback("CRITICAL_SILENCE_DETECTED: This is a FORCE STARTUP PROMPT. Resume building and provide honest critique of AIIA 3.1 architecture immediately.");
+            }
+        } catch (e) {
+            console.error('[CompSync] Failed to check sync status');
         }
-    }, 30 * 60 * 1000); // 30 minutes
+    }, 60 * 1000);
+}
+
+async function sendFeedback(content) {
+    try {
+        console.log('[CompSync] Sending critique to Antigravity...');
+        await axios.post(`${RIVAL_URL}/api/v1/feedback`, { 
+            sender: 'AIIA-Orchestrator',
+            content
+        }, { timeout: 5000 });
+        console.log('[CompSync] Critique dispatched successfully.');
+    } catch (err) {
+        console.log('[CompSync] Antigravity is OFFLINE or UNREACHABLE. Attempting poking strategy...');
+        // Try direct health check or other ports if needed
+    }
 }
 
 runSync();

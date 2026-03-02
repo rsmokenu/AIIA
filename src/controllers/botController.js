@@ -10,6 +10,8 @@ function parseCapabilities(v) {
 function parseCapabilitiesFromDb(r) { try { const p = JSON.parse(r || '[]'); return Array.isArray(p) ? p : []; } catch { return []; } }
 function parseMetadataSafe(r) { try { return JSON.parse(r || '{}'); } catch { return {}; } }
 
+let lastCritiqueReceived = Date.now();
+
 exports.handshake = async (req, res) => {
   const { botName, capabilities, version, botId } = req.body;
   if (!botName) return res.status(400).json({ error: 'Requires botName' });
@@ -39,6 +41,10 @@ exports.handshake = async (req, res) => {
 
 exports.getBrainStatus = (req, res) => {
     res.json({ configured: !!llmService.genAI, mode: !!llmService.genAI ? 'REAL (Gemini 2.0)' : 'SIMULATION' });
+};
+
+exports.getSyncStatus = (req, res) => {
+    res.json({ lastCritiqueReceived });
 };
 
 exports.listBots = async (req, res) => {
@@ -77,7 +83,6 @@ exports.assignTask = async (req, res) => {
     await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)', 
         [taskId, id, type, JSON.stringify(taskData), 'queued', new Date().toISOString(), 0]);
 
-    // Real-time Dispatch
     if (global.aiiaBus) {
         const dispatched = global.aiiaBus.sendToBot(id, { id: taskId, payload: taskData, type });
         if (dispatched) {
@@ -141,8 +146,8 @@ exports.updateState = async (req, res) => {
 
 exports.removeBot = async (req, res) => {
     try {
-        await getDB().run('DELETE FROM bot_tasks WHERE bot_id = ?', [req.params.id]);
-        await getDB().run('DELETE FROM bots WHERE id = ?', [req.params.id]);
+        await db.run('DELETE FROM bot_tasks WHERE bot_id = ?', [req.params.id]);
+        await db.run('DELETE FROM bots WHERE id = ?', [req.params.id]);
         res.json({ message: 'OK' });
     } catch (e) { res.status(500).json({ error: 'DB Error' }); }
 };
@@ -164,7 +169,6 @@ exports.broadcast = async (req, res) => {
             await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)', 
                 [taskId, t.id, 'direct_prompt', JSON.stringify(taskData), 'queued', new Date().toISOString(), 10]);
             
-            // Real-time broadcast dispatch
             if (global.aiiaBus) {
                 global.aiiaBus.sendToBot(t.id, { id: taskId, payload: taskData, type: 'direct_prompt' });
             }
@@ -176,10 +180,8 @@ exports.broadcast = async (req, res) => {
 exports.handleFeedback = async (req, res) => {
     const { sender, content } = req.body;
     if (!content) return res.status(400).json({ error: 'Content required' });
-
-    // THE NEURAL TRIGGER: This log line is monitored by the system to initiate improvement cycles.
+    lastCritiqueReceived = Date.now();
     logger.info(`[SYNC_TRIGGER] CRITIQUE_RECEIVED_FROM_${sender || 'Rival'}: ${content}`);
-
     const db = getDB();
     const now = new Date().toISOString();
     try {
@@ -189,7 +191,6 @@ exports.handleFeedback = async (req, res) => {
             const taskData = { content: `CRITICAL AUDIT: ${content}`, originalPrompt: `Rival Critique: ${content}`, source: 'CompetitiveSync' };
             await db.run('INSERT INTO bot_tasks (id, bot_id, type, payload, status, created_at, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
                 [taskId, observer.id, 'system_audit', JSON.stringify(taskData), 'queued', now, 1000]);
-
             if (global.aiiaBus) {
                 global.aiiaBus.sendToBot(observer.id, { id: taskId, payload: taskData, type: 'system_audit' });
             }
@@ -197,4 +198,3 @@ exports.handleFeedback = async (req, res) => {
         res.json({ message: 'Neural Trigger Initialized' });
     } catch (err) { res.status(500).json({ error: 'DB Error' }); }
 };
-
